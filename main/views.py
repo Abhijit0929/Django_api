@@ -45,3 +45,7 @@ def product_list(request):
 def product_ui(request):
     return render(request, "product_ui.html")
 
+def products_index(request):
+    products = Product.objects.all()
+    return render(request, "index_api.html", {"products": products})
+
