@@ -6,11 +6,22 @@ from django.contrib import admin
 
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     
-    path('', views.api_form, name='api_form'),
-    path('api/register', views.my_api, name='my_api'),
-    path('products-ui/', views.product_ui, name='product_ui'),
-    path('products-index/',views.products_index,name='products_index'),
+       # ---------- HTML UI ----------
+    path("", views.home, name="home"),
+    path("bins/", views.bins_view, name="bins"),
+    path("report/", views.report_waste, name="report"),
+    path("reports/", views.reports_view, name="reports"),
+
+
+    # ---------- API ----------
+    path("api/bins/", views.bin_list_create),
+    path("api/bins/<int:id>/", views.bin_update),
+
+    path("api/pickups/", views.pickup_list_create),
+    path("api/pickups/<int:id>/", views.update_pickup_status),
+
+    path("api/reports/", views.report_list_create),
+
 ]
 

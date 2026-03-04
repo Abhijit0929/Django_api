@@ -1,0 +1,23 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+
+<h2 class="text-2xl font-bold mb-4">
+My Waste Reports
+</h2>
+
+{% for report in reports %}
+
+<div class="bg-white p-4 rounded shadow mb-3">
+
+<p><b>Location:</b> {{ report.location }}</p>
+
+<p><b>Status:</b> {{ report.status }}</p>
+
+<p>{{ report.description }}</p>
+
+</div>
+
+{% endfor %}
+
+{% endblock %}
