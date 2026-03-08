@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Live City Dashboard</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+</head>
+
+<body class="bg-gray-100">
+
+<div class="max-w-6xl mx-auto mt-6">
+
+<h1 class="text-3xl font-bold text-green-600 mb-4">
+Live City Waste Dashboard
+</h1>
+
+<div id="map" class="h-[600px] rounded shadow"></div>
+
+</div>
+
+
+<script>
+
+var map = L.map('map').setView([18.6298,73.7997],12)
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+attribution:'© OpenStreetMap'
+}).addTo(map)
+
+
+// -------- Smart Bins --------
+
+{% for bin in bins %}
+
+var iconColor = "{{bin.status}}" == "full" ? "red" : "green"
+
+var marker = L.circleMarker(
+    [{{bin.latitude}},{{bin.longitude}}],
+    {
+        radius:8,
+        color:iconColor,
+        fillOpacity:0.8
+    }
+).addTo(map)
+
+marker.bindPopup(`
+<b>Smart Bin</b><br>
+Location: {{bin.location}}<br>
+Fill Level: {{bin.fill_level}}%
+`)
+
+{% endfor %}
+
+
+// -------- Garbage Reports --------
+
+{% for report in reports %}
+
+var marker = L.marker([{{report.latitude}},{{report.longitude}}]).addTo(map)
+
+marker.bindPopup(`
+<b>Garbage Report</b><br>
+Location: {{report.location}}<br>
+Status: {{report.status}}
+`)
+
+{% endfor %}
+
+
+// -------- Pickup Locations --------
+
+{% for pickup in pickups %}
+
+var marker = L.marker(
+[{{pickup.bin.latitude}},{{pickup.bin.longitude}}],
+{
+icon: L.icon({
+iconUrl:"https://cdn-icons-png.flaticon.com/512/2972/2972185.png",
+iconSize:[30,30]
+})
+}
+).addTo(map)
+
+marker.bindPopup(`
+<b>Pickup Task</b><br>
+Bin: {{pickup.bin.location}}<br>
+Status: {{pickup.status}}
+`)
+
+{% endfor %}
+
+</script>
+
+</body>
+</html>

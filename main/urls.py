@@ -24,6 +24,10 @@ urlpatterns = [
     path("api/reports/", views.report_list_create),
     path("pickups/", views.pickups_view),
     path("pickup/update/<int:id>/", views.update_pickup),
+    
+    
+    path("dashboard/", views.city_dashboard, name="dashboard"),
+    path("admin-dashboard/",views.admin_dashboard,name="admin_dashboard"),  
 
 ]
 

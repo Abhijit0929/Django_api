@@ -168,3 +168,40 @@ def update_pickup(request, id):
     pickup.save()
 
     return redirect("/pickups/")
+
+def city_dashboard(request):
+    bins=SmartBin.objects.all()
+    reports=WasteReport.objects.all()
+    pickups=Pickup.objects.all()
+    
+    context={
+        "bins":bins,
+        "reports":reports,
+        "pickups":pickups
+    }
+    
+    return render(request,"dashboard.html",context)
+    
+    
+from .models import SmartBin, Pickup, WasteReport
+from django.contrib.auth.models import User
+from django.shortcuts import render
+
+
+def admin_dashboard(request):
+
+    total_bins = SmartBin.objects.count()
+    full_bins = SmartBin.objects.filter(status="full").count()
+    pending_pickups = Pickup.objects.filter(status="pending").count()
+    reports = WasteReport.objects.count()
+    workers = User.objects.count()
+
+    context = {
+        "total_bins": total_bins,
+        "full_bins": full_bins,
+        "pending_pickups": pending_pickups,
+        "reports": reports,
+        "workers": workers
+    }
+
+    return render(request,"admin_dashboard.html",context)

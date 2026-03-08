@@ -1,0 +1,39 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+
+<a href="/admin-dashboard/">Dashboard</a>
+<a href="/admin/bins/">Bins</a>
+<a href="/admin/pickups/">Pickups</a>
+<a href="/admin/reports/">Reports</a>
+<a href="/dashboard/">City Map</a>
+
+<h1 class="text-3xl font-bold text-green-600 mb-6">
+Admin Dashboard
+</h1>
+
+<div class="grid grid-cols-4 gap-6">
+
+<div class="bg-white p-6 rounded shadow">
+<h3 class="text-gray-500">Total Smart Bins</h3>
+<p class="text-3xl font-bold">{{total_bins}}</p>
+</div>
+
+<div class="bg-white p-6 rounded shadow">
+<h3 class="text-gray-500">Full Bins</h3>
+<p class="text-3xl font-bold text-red-600">{{full_bins}}</p>
+</div>
+
+<div class="bg-white p-6 rounded shadow">
+<h3 class="text-gray-500">Pending Pickups</h3>
+<p class="text-3xl font-bold text-yellow-500">{{pending_pickups}}</p>
+</div>
+
+<div class="bg-white p-6 rounded shadow">
+<h3 class="text-gray-500">Garbage Reports</h3>
+<p class="text-3xl font-bold">{{reports}}</p>
+</div>
+
+</div>
+
+{% endblock %}
