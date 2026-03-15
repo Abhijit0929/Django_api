@@ -205,3 +205,13 @@ def admin_dashboard(request):
     }
 
     return render(request,"admin_dashboard.html",context)
+
+
+from django.shortcuts import render
+from .models import SmartBin
+
+def admin_bins(request):
+
+    bins = SmartBin.objects.all()
+
+    return render(request,"admin_bins.html",{"bins":bins})

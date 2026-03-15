@@ -1,0 +1,112 @@
+{% extends "navbar.html" %}
+
+{% block content %}
+
+<h1 class="text-3xl font-bold text-green-600 mb-6">
+Manage Smart Bins
+</h1>
+
+<div class="mb-4">
+<a href="/admin/add-bin/" 
+class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
++ Add New Bin
+</a>
+</div>
+
+<div class="bg-white shadow rounded">
+
+<table class="w-full">
+
+<thead class="bg-gray-100 text-left">
+
+<tr>
+<th class="p-3">Location</th>
+<th class="p-3">Fill Level</th>
+<th class="p-3">Status</th>
+<th class="p-3">Action</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for bin in bins %}
+
+<tr class="border-t">
+
+<td class="p-3">
+📍 {{bin.location}}
+</td>
+
+<td class="p-3">
+
+<div class="w-full bg-gray-200 rounded h-3">
+
+<div class="h-3 rounded
+{% if bin.fill_level < 50 %}
+bg-green-500
+{% elif bin.fill_level < 80 %}
+bg-yellow-500
+{% else %}
+bg-red-500
+{% endif %}"
+style="width: {{bin.fill_level}}%">
+</div>
+
+</div>
+
+<p class="text-sm mt-1">{{bin.fill_level}}%</p>
+
+</td>
+
+<td class="p-3">
+
+{% if bin.status == "full" %}
+
+<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-sm">
+Full
+</span>
+
+{% else %}
+
+<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">
+Empty
+</span>
+
+{% endif %}
+
+</td>
+
+<td class="p-3 space-x-2">
+
+<a href="/admin/edit-bin/{{bin.id}}/"
+class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
+Edit
+</a>
+
+<a href="/admin/delete-bin/{{bin.id}}/"
+class="bg-red-500 text-white px-3 py-1 rounded text-sm">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="4" class="p-4 text-center text-gray-500">
+No smart bins added yet
+</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}
