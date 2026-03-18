@@ -215,3 +215,4 @@ def admin_bins(request):
     bins = SmartBin.objects.all()
 
     return render(request,"admin_bins.html",{"bins":bins})
+

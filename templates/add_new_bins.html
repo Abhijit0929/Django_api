@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h1 class="mb-4">Add New Bins</h1>
+            
+            <form method="post" class="needs-validation">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="bin_id" class="form-label">Bin ID</label>
+                    <input type="text" class="form-control" id="bin_id" name="bin_id" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="bin_type" class="form-label">Bin Type</label>
+                    <select class="form-select" id="bin_type" name="bin_type" required>
+                        <option value="">Select Type</option>
+                        <option value="organic">Organic</option>
+                        <option value="recyclable">Recyclable</option>
+                        <option value="hazardous">Hazardous</option>
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="location" class="form-label">Location</label>
+                    <input type="text" class="form-control" id="location" name="location" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="capacity" class="form-label">Capacity (liters)</label>
+                    <input type="number" class="form-control" id="capacity" name="capacity" required>
+                </div>
+                
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">Add Bin</button>
+                    <a href="{% url 'bins_list' %}" class="btn btn-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
