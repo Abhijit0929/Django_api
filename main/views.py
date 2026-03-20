@@ -216,3 +216,9 @@ def admin_bins(request):
 
     return render(request,"admin_bins.html",{"bins":bins})
 
+def admin_pickups(request):
+
+    pickups = Pickup.objects.all()
+
+    return render(request,"admin_pickups.html",{"pickups":pickups})
+
