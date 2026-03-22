@@ -222,3 +222,9 @@ def admin_pickups(request):
 
     return render(request,"admin_pickups.html",{"pickups":pickups})
 
+def admin_reports(request):
+
+    reports = WasteReport.objects.all()
+
+    return render(request,"admin_reports.html",{"reports":reports})
+
