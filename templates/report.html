@@ -6,10 +6,17 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Leaflet Map -->
+    <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <style>
+        #map {
+            height: 400px;
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100">
@@ -21,13 +28,21 @@ Report Garbage
 </h2>
 
 <form method="POST">
-
 {% csrf_token %}
 
-<!-- Map -->
-<div id="map" class="h-96 mb-4 rounded"></div>
+<!-- Button -->
+<button 
+type="button"
+onclick="getUserLocation()"
+class="bg-blue-600 text-white px-4 py-2 rounded mb-4 hover:bg-blue-700"
+>
+Use My Current Location
+</button>
 
-<!-- Hidden fields for coordinates -->
+<!-- Map -->
+<div id="map" class="mb-4 rounded"></div>
+
+<!-- Hidden fields -->
 <input type="hidden" name="latitude" id="latitude">
 <input type="hidden" name="longitude" id="longitude">
 
@@ -37,7 +52,7 @@ Report Garbage
 type="text"
 name="location"
 id="location"
-placeholder="Click on map to auto-fill location"
+placeholder="Click on map or use current location"
 class="border p-2 w-full mb-3 rounded"
 />
 
@@ -56,55 +71,101 @@ Submit Report
 </button>
 
 </form>
-
 </div>
 
 <script>
 
-// Initialize map
-var map = L.map('map').setView([18.6298, 73.7997], 13); // Pimpri default
+// ✅ Initialize map (ONLY ONCE)
+var map = L.map('map').setView([18.6298, 73.7997], 13);
 
-// Map tiles
+// ✅ Load tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
 }).addTo(map);
 
 var marker;
 
-// When user clicks on map
+// ✅ FIX gray map issue
+setTimeout(() => {
+    map.invalidateSize();
+}, 500);
+
+
+// 👉 CLICK ON MAP
 map.on('click', function(e){
 
     var lat = e.latlng.lat;
     var lon = e.latlng.lng;
 
-    // Store coordinates
     document.getElementById("latitude").value = lat;
     document.getElementById("longitude").value = lon;
 
-    // Remove old marker
     if(marker){
-        map.removeLayer(marker)
+        map.removeLayer(marker);
     }
 
-    // Add new marker
-    marker = L.marker([lat,lon]).addTo(map);
+    marker = L.marker([lat, lon]).addTo(map);
 
-    // Reverse geocoding to get location name
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
     .then(response => response.json())
     .then(data => {
 
         var locationName = data.display_name;
 
-        // Fill input field
         document.getElementById("location").value = locationName;
-
-        // Show popup
         marker.bindPopup(locationName).openPopup();
 
-    })
+    });
 
-})
+});
+
+
+// 👉 CURRENT LOCATION FUNCTION
+function getUserLocation(){
+
+    if (navigator.geolocation) {
+
+        navigator.geolocation.getCurrentPosition(function(position){
+
+            var lat = position.coords.latitude;
+            var lon = position.coords.longitude;
+
+            map.setView([lat, lon], 16);
+
+            document.getElementById("latitude").value = lat;
+            document.getElementById("longitude").value = lon;
+
+            if(marker){
+                map.removeLayer(marker);
+            }
+
+            marker = L.marker([lat, lon]).addTo(map);
+
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+            .then(response => response.json())
+            .then(data => {
+
+                var locationName = data.display_name;
+
+                document.getElementById("location").value = locationName;
+                marker.bindPopup("You are here: " + locationName).openPopup();
+
+            });
+
+            // ✅ FIX map rendering after move
+            setTimeout(() => {
+                map.invalidateSize();
+            }, 200);
+
+        },
+        function(error){
+            alert("Location access denied or not available");
+        });
+
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+}
 
 </script>
 
