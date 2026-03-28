@@ -122,6 +122,7 @@ def report_waste(request):
         description = request.POST.get("description")
         latitude = request.POST.get("latitude")
         longitude = request.POST.get("longitude")
+        image=request.FILES.get("image")
 
         WasteReport.objects.create(
             location=location,
@@ -129,7 +130,8 @@ def report_waste(request):
             latitude=latitude,
             longitude=longitude,
             status="open",
-            user=request.user
+            user=request.user,
+            image=image
         )
 
         return redirect("/reports/")
@@ -150,7 +152,7 @@ from django.http import HttpResponse
 def pickups_view(request):
     # 🔐 Only admin/staff can access
     if not request.user.is_staff:
-        return HttpResponse("Access Denied ❌")
+        return HttpResponse(status=403)
 
     pickups = Pickup.objects.all()
     return render(request, "admin_pickups.html", {"pickups": pickups})

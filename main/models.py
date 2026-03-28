@@ -58,6 +58,8 @@ class WasteReport(models.Model):
         max_length=10,
         choices=[("open","Open"),("resolved","Resolved")]
     )
+    
+    image =models.ImageField(upload_to="reports/",null=True, blank=True)
 
     def __str__(self):
         return f"Report at {self.location}"

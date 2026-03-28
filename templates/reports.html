@@ -14,6 +14,13 @@ My Waste Reports
 
 <p><b>Status:</b> {{ report.status }}</p>
 
+{% if report.image %}
+    <img src="{{ report.image.url }}" class="w-32 h-32 object-cover rounded mb-2"/>
+{% else %}
+    <p>No Image</p>
+    <p>{{ report.image }}</p>
+{% endif %}
+
 <p>{{ report.description }}</p>
 
 </div>
