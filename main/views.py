@@ -145,17 +145,23 @@ def reports_view(request):
 
 # Pickups page view
 
-from .models import Pickup
+from django.http import HttpResponse
 
 def pickups_view(request):
+    # 🔐 Only admin/staff can access
+    if not request.user.is_staff:
+        return HttpResponse("Access Denied ❌")
 
     pickups = Pickup.objects.all()
-
-    return render(request, "pickups.html", {"pickups": pickups})
+    return render(request, "admin_pickups.html", {"pickups": pickups})
 
 
 
 def update_pickup(request, id):
+    from django.shortcuts import redirect
+
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
 
     pickup = Pickup.objects.get(id=id)
 
@@ -167,20 +173,26 @@ def update_pickup(request, id):
 
     pickup.save()
 
-    return redirect("/pickups/")
+    return redirect("/admin-dashboard/pickups/")
 
 def city_dashboard(request):
-    bins=SmartBin.objects.all()
-    reports=WasteReport.objects.all()
-    pickups=Pickup.objects.all()
-    
-    context={
-        "bins":bins,
-        "reports":reports,
-        "pickups":pickups
+    from django.shortcuts import redirect
+
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
+    from django.shortcuts import redirect
+
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
+    bins = SmartBin.objects.all()
+    reports = WasteReport.objects.all()
+
+    context = {
+        "bins": bins,
+        "reports": reports
     }
-    
-    return render(request,"dashboard.html",context)
+
+    return render(request, "dashboard.html", context)
     
     
 from .models import SmartBin, Pickup, WasteReport
@@ -189,6 +201,10 @@ from django.shortcuts import render
 
 
 def admin_dashboard(request):
+    from django.shortcuts import redirect
+
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
 
     total_bins = SmartBin.objects.count()
     full_bins = SmartBin.objects.filter(status="full").count()
@@ -216,15 +232,11 @@ def admin_bins(request):
 
     return render(request,"admin_bins.html",{"bins":bins})
 
-def admin_pickups(request):
-
-    pickups = Pickup.objects.all()
-
-    return render(request,"admin_pickups.html",{"pickups":pickups})
 
 def admin_reports(request):
 
     reports = WasteReport.objects.all()
 
     return render(request,"admin_reports.html",{"reports":reports})
+
 
