@@ -2,48 +2,129 @@
 
 {% block content %}
 
-<a href="/admin-dashboard/">Dashboard</a>
-<a href="/admin/bins/">Bins</a>
-<a href="/admin/pickups/">Pickups</a>
-<a href="/admin/reports/">Reports</a>
-<a href="/dashboard/">City Map</a>
+<div class="p-6 bg-gray-100 min-h-screen">
 
-<h1 class="text-3xl font-bold text-green-600 mb-6">
-Admin Dashboard
-</h1>
+  <!-- NAVBAR LINKS -->
+  <div class="flex gap-6 mb-6 text-gray-600 font-medium">
+    <a href="/admin-dashboard/" class="hover:text-green-600">Dashboard</a>
+    <a href="/admin/bins/" class="hover:text-green-600">Bins</a>
+    <a href="/admin/pickups/" class="hover:text-green-600">Pickups</a>
+    <a href="/admin/reports/" class="hover:text-green-600">Reports</a>
+    <a href="/dashboard/" class="hover:text-green-600">City Map</a>
+  </div>
 
-<div class="grid grid-cols-4 gap-6">
+  <!-- TITLE -->
+  <h1 class="text-3xl font-bold text-green-600 mb-6">
+    Admin Dashboard
+  </h1>
 
-<div class="bg-white p-6 rounded shadow">
-<h3 class="text-gray-500">Total Smart Bins</h3>
-<p class="text-3xl font-bold">{{total_bins}}</p>
+  <!-- ALERTS -->
+  <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-6 rounded">
+    <h3 class="font-bold text-red-600">⚠️ Alerts</h3>
+    <p>{{ full_bins }} bins are full and need immediate pickup</p>
+  </div>
+
+  <!-- GRID -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+    <!-- TOTAL BINS -->
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+      <h3 class="text-gray-500">🗑️ Total Smart Bins</h3>
+      <p class="text-3xl font-bold mt-2">{{ total_bins }}</p>
+    </div>
+
+    <!-- FULL BINS -->
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+      <h3 class="text-gray-500">🚨 Full Bins</h3>
+      <p class="text-3xl font-bold text-red-600 mt-2">{{ full_bins }}</p>
+    </div>
+
+    <!-- PENDING PICKUPS -->
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+      <h3 class="text-gray-500">⏳ Pending Pickups</h3>
+      <p class="text-3xl font-bold text-yellow-500 mt-2">{{ pending_pickups }}</p>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
+      <h3 class="text-gray-500">📢 Garbage Reports</h3>
+      <p class="text-3xl font-bold mt-2">{{ reports }}</p>
+    </div>
+
+  </div>
+
+  <!-- SECOND ROW -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+
+    <!-- FILL LEVEL -->
+    <div class="bg-white p-6 rounded-2xl shadow">
+      <h3 class="text-gray-500 mb-3">📊 Avg Fill Level</h3>
+
+      <div class="w-full bg-gray-200 rounded-full h-3">
+        <div class="bg-green-500 h-3 rounded-full"
+             style="width: {{ avg_fill_level }}%">
+        </div>
+      </div>
+
+      <p class="mt-2 font-bold">{{ avg_fill_level }}%</p>
+    </div>
+
+    <!-- AI PREDICTION -->
+    <div class="bg-white p-6 rounded-2xl shadow">
+      <h3 class="text-gray-500">🤖 AI Prediction</h3>
+      <p class="text-xl font-bold text-red-500 mt-2">
+        {{ predicted_bins|default:"3 bins will be full soon" }}
+      </p>
+    </div>
+
+  </div>
+
+  <!-- CHART -->
+  <div class="bg-white p-6 rounded-2xl shadow mt-6">
+    <h3 class="text-gray-500 mb-4">📈 Pickup Trends</h3>
+    <canvas id="pickupChart"></canvas>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div class="bg-white p-6 rounded-2xl shadow mt-6">
+    <h3 class="font-bold mb-4">⚡ Quick Actions</h3>
+
+    <div class="flex flex-wrap gap-4">
+      <a href="/admin/bins/" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">View Bins</a>
+      <a href="/admin/reports/" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">View Reports</a>
+      <a href="/dashboard/" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Live Map</a>
+      <a href="/admin-dashboard/pickups/" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Manage Pickups</a>
+    </div>
+  </div>
+
+  <!-- MAP PREVIEW -->
+  <div class="bg-white p-6 rounded-2xl shadow mt-6">
+    <h3 class="text-gray-500 mb-4">🗺️ City Overview</h3>
+    <iframe src="/dashboard/" class="w-full h-64 rounded"></iframe>
+  </div>
+
 </div>
 
-<div class="bg-white p-6 rounded shadow">
-<h3 class="text-gray-500">Full Bins</h3>
-<p class="text-3xl font-bold text-red-600">{{full_bins}}</p>
-</div>
+<!-- CHART JS -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<div class="bg-white p-6 rounded shadow">
-<h3 class="text-gray-500">Pending Pickups</h3>
-<p class="text-3xl font-bold text-yellow-500">{{pending_pickups}}</p>
-</div>
+<script>
+const ctx = document.getElementById('pickupChart');
 
-<div class="bg-white p-6 rounded shadow">
-<h3 class="text-gray-500">Garbage Reports</h3>
-<p class="text-3xl font-bold">{{reports}}</p>
-</div>
-
-<div class="bg-white p-6 rounded shadow">
-<h3 class="text-gray-500">Avg Fill Level</h3>
-<p class="text-3xl font-bold">{{avg_fill_level}}%</p>
-</div>
-
-<a href="/admin-dashboard/pickups/" 
-class="bg-green-600 text-white px-4 py-2 rounded">
-Manage Pickups
-</a>
-
-</div>
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    datasets: [{
+      label: 'Pickups',
+      data: [12, 19, 8, 15, 10, 20],
+      tension: 0.4
+    }]
+  },
+  options: {
+    responsive: true
+  }
+});
+</script>
 
 {% endblock %}
