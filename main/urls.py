@@ -30,6 +30,7 @@ urlpatterns = [
     path("dashboard/", views.city_dashboard, name="dashboard"),
     path("admin-dashboard/",views.admin_dashboard,name="admin_dashboard"),  
     path("admin-dashboard/bins/", views.admin_bins, name="admin_bins"),
+    
 
 ]
 
