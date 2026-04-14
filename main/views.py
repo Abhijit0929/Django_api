@@ -241,4 +241,11 @@ def admin_reports(request):
 
     return render(request,"admin_reports.html",{"reports":reports})
 
+def feedback_view(request):
+    return render(request,"feedback.html")
+
+
+
+def profile_view(request):
+    return render(request,"profile.html")
 

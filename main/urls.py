@@ -13,6 +13,8 @@ urlpatterns = [
     path("bins/", views.bins_view, name="bins"),
     path("report/", views.report_waste, name="report"),
     path("reports/", views.reports_view, name="reports"),
+    path("feedback/", views.feedback_view, name="feedback"),
+    path("profile/", views.profile_view, name="profile"),
 
 
     # ---------- API ----------
