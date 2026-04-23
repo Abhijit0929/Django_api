@@ -249,3 +249,18 @@ def feedback_view(request):
 def profile_view(request):
     return render(request,"profile.html")
 
+def admin_feedback(request):
+    from .models import Feedback
+
+    feedbacks = Feedback.objects.all()
+
+    return render(request,"admin_feedback.html",{"feedbacks":feedbacks})
+
+def notifications_view(request):
+    from .models import Notification
+
+    notifications = Notification.objects.filter(user=request.user).order_by("-created_at")
+
+    return render(request,"notifications.html",{"notifications":notifications})
+
+

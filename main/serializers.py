@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import SmartBin, Pickup, WasteReport,Feedback,UserProfile
+from .models import Notification
 
 class SmartBinSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,6 +25,11 @@ class FeedbackSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
+        fields = '__all__'
+        
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
         fields = '__all__'
         
         

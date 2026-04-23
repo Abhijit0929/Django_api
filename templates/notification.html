@@ -1,0 +1,73 @@
+<html>
+<head>
+    <title>Notifications</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+        }
+        
+        .notification {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+        
+        .notification:last-child {
+            border-bottom: none;
+        }
+        
+        .message {
+            font-size: 1.1rem;
+        }
+        
+        .timestamp {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>My Notifications</h1>
+        {% for notification in notifications %}
+        <div class="notification">
+            <div class="message">{{ notification.message }}</div>
+            <div class="timestamp">{{ notification.created_at }}</div>
+        </div>
+        {% empty %}
+        <p>No notifications yet.</p>
+        {% endfor %}
+    </div>
+
+    <script>
+        // Optional: Add JavaScript to mark notifications as read when clicked
+        document.querySelectorAll('.notification').forEach(function(notification) {
+            notification.addEventListener('click', function() {
+                // Send AJAX request to mark as read (not implemented here)
+                this.style.backgroundColor = '#f0f4f8'; // Example visual feedback
+            });
+        });
+    </script>
+
+    
+</body>
+</html>
