@@ -256,11 +256,21 @@ def admin_feedback(request):
 
     return render(request,"admin_feedback.html",{"feedbacks":feedbacks})
 
+def admin_notifications(request):
+    from .models import Notification
+
+    notifications = Notification.objects.all().order_by("-created_at")
+
+    return render(request,"admin_notifications.html",{"notifications":notifications})
+
+
 def notifications_view(request):
     from .models import Notification
 
     notifications = Notification.objects.filter(user=request.user).order_by("-created_at")
 
     return render(request,"notifications.html",{"notifications":notifications})
+
+
 
 
