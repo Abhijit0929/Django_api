@@ -116,13 +116,26 @@ def bins_view(request):
 
 def report_waste(request):
 
+    if not request.user.is_authenticated:
+        return redirect("/")
+
     if request.method == "POST":
 
-        location = request.POST.get("location")
-        description = request.POST.get("description")
-        latitude = request.POST.get("latitude")
-        longitude = request.POST.get("longitude")
-        image=request.FILES.get("image")
+        location    = request.POST.get("location", "").strip()
+        description = request.POST.get("description", "").strip()
+        image       = request.FILES.get("image")
+
+        # Convert empty strings to None so FloatField doesn't crash
+        raw_lat = request.POST.get("latitude", "").strip()
+        raw_lon = request.POST.get("longitude", "").strip()
+        latitude  = float(raw_lat) if raw_lat else None
+        longitude = float(raw_lon) if raw_lon else None
+
+        # Basic validation
+        if not location or not description:
+            return render(request, "report.html", {
+                "error": "Please fill in the location and description before submitting."
+            })
 
         WasteReport.objects.create(
             location=location,
@@ -131,18 +144,26 @@ def report_waste(request):
             longitude=longitude,
             status="open",
             user=request.user,
-            image=image
+            image=image,
         )
 
         return redirect("/reports/")
 
-    return render(request,"report.html")
+    return render(request, "report.html")
 
 def reports_view(request):
 
-    reports = WasteReport.objects.all()
+    if not request.user.is_authenticated:
+        return redirect("/")
 
-    return render(request,"reports.html",{"reports":reports})
+    # Staff/admin see all reports; regular users see only their own
+    if request.user.is_staff:
+        reports = WasteReport.objects.all().order_by("-id")
+    else:
+        reports = WasteReport.objects.filter(user=request.user).order_by("-id")
+
+    return render(request, "reports.html", {"reports": reports})
+
 
 
 # Pickups page view
