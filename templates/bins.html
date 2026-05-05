@@ -1,83 +1,213 @@
-{% extends "navbar.html" %}
-
+{% extends 'navbar.html' %}
 {% block content %}
 
-<h2 class="text-3xl font-bold mb-6 text-green-600">
-Nearby Smart Bins
-</h2>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  /* -- FILTER BAR -- */
+  .filter-bar{
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:12px;margin-bottom:20px;
+  }
+  .filter-tabs{
+    display:flex;gap:4px;background:#fff;
+    border:.5px solid #e5e7eb;border-radius:12px;padding:5px;
+  }
+  .filter-tab{
+    padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;
+    color:#6b7280;text-decoration:none;cursor:pointer;border:none;
+    background:transparent;transition:background .15s,color .15s;
+  }
+  .filter-tab:hover{background:#f3f4f6;color:#111;}
+  .filter-tab.active{background:#0a2e1a;color:#4ade80;}
+
+  /* -- BIN CARDS GRID -- */
+  .bins-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+    gap:16px;
+  }
+
+  /* -- BIN CARD -- */
+  .bin-card{
+    background:#fff;border:.5px solid #e5e7eb;border-radius:18px;
+    padding:22px;transition:box-shadow .2s,transform .15s;
+    display:flex;flex-direction:column;gap:14px;
+  }
+  .bin-card:hover{box-shadow:0 8px 28px rgba(0,0,0,.08);transform:translateY(-2px);}
+
+  .bin-card-header{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:8px;
+  }
+  .bin-icon{
+    width:44px;height:44px;border-radius:12px;background:#f0fdf4;
+    display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  }
+  .bin-location{
+    font-family:'Syne',sans-serif;font-size:14px;font-weight:600;
+    color:#111;line-height:1.4;
+  }
+  .bin-loc-label{font-size:11px;color:#9ca3af;margin-bottom:3px;text-transform:uppercase;letter-spacing:.05em;}
+
+  /* -- FILL SECTION -- */
+  .fill-label-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .fill-label-row span:first-child{font-size:12px;color:#6b7280;}
+  .fill-pct{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#111;}
+
+  /* -- LAST UPDATED -- */
+  .bin-updated{font-size:11px;color:#9ca3af;display:flex;align-items:center;gap:4px;margin-top:2px;}
+
+  /* -- EMPTY STATE -- */
+  .empty-state{
+    text-align:center;padding:64px 24px;
+    background:#fff;border:.5px solid #e5e7eb;border-radius:18px;
+  }
+  .empty-icon{font-size:48px;margin-bottom:12px;}
+  .empty-state h3{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#111;margin-bottom:8px;}
+  .empty-state p{font-size:13px;color:#6b7280;}
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-header reveal">
+  <div class="page-header-tag">🗑️ Live Status</div>
+  <h1>Nearby Smart <span>Bins</span></h1>
+  <p>Real-time fill levels and status for smart waste bins near you across the city.</p>
+</div>
+
+<!-- STAT STRIP -->
+<div class="stat-grid reveal">
+  <div class="stat-item">
+    <div class="stat-item-num">{{ bins|length }}</div>
+    <div class="stat-item-label">Total Bins</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num green">
+      {% with empty_count=0 %}
+        {{ bins|dictsort:"status"|length }}
+      {% endwith %}
+      {% for bin in bins %}{% if bin.status == "empty" %}{% endif %}{% endfor %}
+      {{ bins|length }}
+    </div>
+    <div class="stat-item-label">Bins Available</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num red" id="full-count">—</div>
+    <div class="stat-item-label">Bins Full</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num amber" id="avg-fill">—</div>
+    <div class="stat-item-label">Avg Fill Level</div>
+  </div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar reveal">
+  <span class="section-label" style="margin:0;">{{ bins|length }} bin{{ bins|length|pluralize }} found</span>
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="filterBins('all', this)">All</button>
+    <button class="filter-tab" onclick="filterBins('empty', this)">Available</button>
+    <button class="filter-tab" onclick="filterBins('full', this)">Full</button>
+  </div>
+</div>
+
+<!-- BINS GRID -->
+<div class="bins-grid" id="bins-grid">
 
 {% for bin in bins %}
+<div class="bin-card reveal" data-status="{{ bin.status }}" data-fill="{{ bin.fill_level }}">
 
-<div class="bg-white rounded-xl shadow-md p-5 hover:shadow-lg transition">
+  <!-- Header -->
+  <div class="bin-card-header">
+    <div style="display:flex;gap:12px;align-items:flex-start;">
+      <div class="bin-icon">🗑️</div>
+      <div>
+        <div class="bin-loc-label">📍 Location</div>
+        <div class="bin-location">{{ bin.location }}</div>
+      </div>
+    </div>
+    {% if bin.status == "full" %}
+      <span class="badge badge-red">Full</span>
+    {% elif bin.fill_level >= 80 %}
+      <span class="badge badge-yellow">Nearly Full</span>
+    {% else %}
+      <span class="badge badge-green">OK</span>
+    {% endif %}
+  </div>
 
-<!-- Location -->
-<h3 class="text-lg font-semibold text-gray-800 mb-2">
-📍 {{ bin.location }}
-</h3>
+  <!-- Fill Level Bar -->
+  <div>
+    <div class="fill-label-row">
+      <span>Fill Level</span>
+      <span class="fill-pct">{{ bin.fill_level }}%</span>
+    </div>
+    <div class="fill-bar-wrap">
+      <div class="fill-bar
+        {% if bin.fill_level < 50 %}green{% elif bin.fill_level < 80 %}amber{% else %}red{% endif %}"
+        style="width:{{ bin.fill_level }}%;">
+      </div>
+    </div>
+  </div>
 
-<!-- Fill Level -->
-<div class="mb-3">
-
-<p class="text-sm text-gray-600 mb-1">
-Fill Level: {{ bin.fill_level }}%
-</p>
-
-<div class="w-full bg-gray-200 rounded-full h-3">
-
-<div 
-class="h-3 rounded-full 
-{% if bin.fill_level < 50 %}
-bg-green-500
-{% elif bin.fill_level < 80 %}
-bg-yellow-500
-{% else %}
-bg-red-500
-{% endif %}"
-style="width: {{ bin.fill_level }}%">
-</div>
-
-</div>
-
-</div>
-
-<!-- Status -->
-<p class="text-sm font-medium">
-
-Status:
-
-{% if bin.status == "empty" %}
-
-<span class="text-green-600 font-semibold">
-Empty
-</span>
-
-{% else %}
-
-<span class="text-red-600 font-semibold">
-Full
-</span>
-
-{% endif %}
-
-</p>
-
-<!-- Last Updated -->
-<p class="text-xs text-gray-400 mt-2">
-Updated: {{ bin.last_updated }}
-</p>
+  <!-- Footer -->
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <div class="bin-updated">
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6.5" stroke="#9ca3af" stroke-width="1.4"/>
+        <path d="M8 5v3.5l2 2" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      Updated: {{ bin.last_updated }}
+    </div>
+    {% if bin.status == "full" %}
+      <span style="font-size:11px;color:#ef4444;font-weight:500;">⚠ Needs collection</span>
+    {% else %}
+      <span style="font-size:11px;color:#22c55e;font-weight:500;">✓ Operational</span>
+    {% endif %}
+  </div>
 
 </div>
-
 {% empty %}
-
-<div class="col-span-3 text-center text-gray-500">
-No smart bins available.
+<div class="empty-state reveal" style="grid-column:1/-1;">
+  <div class="empty-icon">🗑️</div>
+  <h3>No smart bins available</h3>
+  <p>There are no smart bins registered in the system yet.</p>
 </div>
-
 {% endfor %}
 
-</div>
+</div><!-- /bins-grid -->
+
+<script>
+  // -- Compute stats from rendered data --
+  (function(){
+    const cards = document.querySelectorAll('.bin-card');
+    let fullCount = 0, totalFill = 0;
+    cards.forEach(c => {
+      const fill = parseInt(c.dataset.fill) || 0;
+      const status = c.dataset.status;
+      if(status === 'full') fullCount++;
+      totalFill += fill;
+    });
+    const avg = cards.length ? Math.round(totalFill / cards.length) : 0;
+    const fullEl = document.getElementById('full-count');
+    const avgEl  = document.getElementById('avg-fill');
+    if(fullEl) fullEl.textContent = fullCount;
+    if(avgEl)  avgEl.textContent  = avg + '%';
+  })();
+
+  // -- Filter tabs --
+  function filterBins(status, btn){
+    // Update active tab
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+
+    // Show / hide cards
+    document.querySelectorAll('.bin-card').forEach(card => {
+      if(status === 'all' || card.dataset.status === status){
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+</script>
 
 {% endblock %}

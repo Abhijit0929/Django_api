@@ -1,25 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Smart Waste Management</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Waste Management</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:#f5f7f5;color:#1a1a1a;min-height:100vh;}
 
-    <script src="https://cdn.tailwindcss.com"></script>
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.7);}}
 
+
+    /* ── SHARED DESIGN TOKENS ── */
+    :root{
+      --green:#22c55e;
+      --green-light:#4ade80;
+      --green-dark:#0a2e1a;
+      --card-border:#e5e7eb;
+      --text-muted:#6b7280;
+    }
+
+    /* ── CARD BASE ── */
+    .card{
+      background:#fff;border:.5px solid var(--card-border);
+      border-radius:18px;padding:24px;
+      transition:box-shadow .2s,transform .15s;
+    }
+    .card:hover{box-shadow:0 8px 28px rgba(0,0,0,.07);}
+
+    /* ── DARK CARD ── */
+    .card-dark{
+      background:var(--green-dark);border-radius:18px;padding:24px;
+      position:relative;overflow:hidden;
+    }
+    .card-dark::before{
+      content:'';position:absolute;top:-40px;right:-40px;
+      width:160px;height:160px;background:#22c55e;border-radius:50%;opacity:.1;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header{
+      background:var(--green-dark);border-radius:20px;
+      padding:40px 44px;margin-bottom:24px;position:relative;overflow:hidden;
+    }
+    .page-header::after{
+      content:'';position:absolute;top:-60px;right:-60px;
+      width:240px;height:240px;background:#22c55e;border-radius:50%;opacity:.08;
+      pointer-events:none;
+    }
+    .page-header-tag{
+      display:inline-flex;align-items:center;gap:6px;
+      background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.3);
+      color:#86efac;font-size:11px;font-weight:500;letter-spacing:.08em;
+      text-transform:uppercase;padding:4px 11px;border-radius:100px;margin-bottom:14px;
+    }
+    .page-header h1{
+      font-family:'Syne',sans-serif;font-size:34px;font-weight:800;
+      color:#fff;line-height:1.1;margin-bottom:8px;
+    }
+    .page-header h1 span{color:var(--green-light);}
+    .page-header p{font-size:14px;color:rgba(255,255,255,.55);line-height:1.6;max-width:500px;}
+
+    /* ── SECTION LABEL ── */
+    .section-label{
+      font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+      color:var(--green);margin-bottom:10px;display:block;
+    }
+
+    /* ── REVEAL ANIMATION ── */
+    .reveal{opacity:0;transform:translateY(20px);transition:opacity .55s ease,transform .55s ease;}
+    .reveal.visible{opacity:1;transform:none;}
+
+    /* ── BUTTONS ── */
+    .btn-primary{
+      background:var(--green);color:#052e0f;font-family:'DM Sans',sans-serif;
+      font-size:14px;font-weight:500;padding:11px 22px;border-radius:10px;border:none;
+      cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+      transition:background .2s,transform .15s;
+    }
+    .btn-primary:hover{background:#16a34a;transform:translateY(-1px);}
+    .btn-secondary{
+      background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);
+      font-family:'DM Sans',sans-serif;font-size:14px;padding:11px 22px;
+      border-radius:10px;border:1px solid rgba(255,255,255,.13);cursor:pointer;
+      text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+      transition:background .2s;
+    }
+    .btn-secondary:hover{background:rgba(255,255,255,.13);}
+    .btn-outline{
+      background:transparent;color:#111;font-size:13px;font-weight:500;
+      padding:9px 18px;border-radius:8px;border:.5px solid #9ca3af;cursor:pointer;
+      display:inline-flex;align-items:center;gap:5px;text-decoration:none;
+      transition:border-color .2s,background .2s;
+    }
+    .btn-outline:hover{background:#f9fafb;border-color:#6b7280;}
+    .btn-danger{
+      background:#fee2e2;color:#b91c1c;font-size:13px;font-weight:500;
+      padding:7px 14px;border-radius:8px;border:none;cursor:pointer;
+      text-decoration:none;display:inline-flex;align-items:center;gap:4px;
+      transition:background .15s;
+    }
+    .btn-danger:hover{background:#fecaca;}
+
+    /* ── FORM ELEMENTS ── */
+    .form-label{display:block;margin-bottom:7px;font-size:13px;font-weight:500;color:#374151;}
+    .form-input{
+      width:100%;padding:11px 14px;border:1px solid #d1d5db;border-radius:10px;
+      font-family:'DM Sans',sans-serif;font-size:14px;color:#111;
+      background:#fff;transition:border-color .2s,box-shadow .2s;outline:none;
+    }
+    .form-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(34,197,94,.12);}
+    .form-input::placeholder{color:#9ca3af;}
+    select.form-input{cursor:pointer;}
+    textarea.form-input{resize:vertical;min-height:110px;}
+
+    /* ── BADGE ── */
+    .badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:500;}
+    .badge-green{background:#d1fae5;color:#065f46;}
+    .badge-red{background:#fee2e2;color:#991b1b;}
+    .badge-yellow{background:#fef3c7;color:#92400e;}
+    .badge-blue{background:#dbeafe;color:#1e40af;}
+
+    /* ── STAT CARD ── */
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:20px;}
+    .stat-item{background:#fff;border:.5px solid var(--card-border);border-radius:16px;padding:20px;transition:transform .15s,box-shadow .2s;cursor:default;}
+    .stat-item:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.07);}
+    .stat-item-num{font-family:'Syne',sans-serif;font-size:28px;font-weight:700;color:var(--green);line-height:1;}
+    .stat-item-label{font-size:12px;color:var(--text-muted);margin-top:5px;}
+    .stat-item-num.red{color:#ef4444;}
+    .stat-item-num.amber{color:#f59e0b;}
+
+    /* ── TABLE ── */
+    .table-wrap{background:#fff;border:.5px solid var(--card-border);border-radius:18px;overflow:hidden;}
+    .data-table{width:100%;border-collapse:collapse;}
+    .data-table thead{background:#f9fafb;}
+    .data-table th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6b7280;border-bottom:1px solid var(--card-border);}
+    .data-table td{padding:13px 16px;font-size:13.5px;color:#374151;border-bottom:.5px solid #f3f4f6;}
+    .data-table tr:last-child td{border-bottom:none;}
+    .data-table tbody tr{transition:background .12s;}
+    .data-table tbody tr:hover{background:#fafafa;}
+
+    /* ── FILL BAR ── */
+    .fill-bar-wrap{background:#e5e7eb;border-radius:100px;height:8px;width:100%;overflow:hidden;}
+    .fill-bar{height:100%;border-radius:100px;transition:width .4s ease;}
+    .fill-bar.green{background:#22c55e;}
+    .fill-bar.amber{background:#f59e0b;}
+    .fill-bar.red{background:#ef4444;}
+
+    /* ── PROGRESS BAR (large) ── */
+    .progress-wrap{background:#f3f4f6;border-radius:100px;height:12px;overflow:hidden;}
+    .progress-bar{height:100%;border-radius:100px;background:linear-gradient(90deg,#22c55e,#4ade80);}
+
+    /* ── ALERT BOX ── */
+    .alert{padding:14px 18px;border-radius:12px;font-size:13.5px;margin-bottom:20px;display:flex;align-items:flex-start;gap:10px;}
+    .alert-red{background:#fee2e2;border:.5px solid #fecaca;color:#991b1b;}
+    .alert-green{background:#d1fae5;border:.5px solid #a7f3d0;color:#065f46;}
+
+    @media(max-width:768px){
+      .main-nav{padding:0 16px;}
+      .page-wrap{padding:20px 16px 40px;}
+      .page-header{padding:28px 24px;}
+      .page-header h1{font-size:26px;}
+      .stat-grid{grid-template-columns:1fr 1fr;}
+    }
+  </style>
 </head>
+<body>
 
-<body class="bg-gray-100">
 
-<nav class="bg-green-600 text-white p-4 flex gap-6">
 
-</nav>
-
-<div class="p-6">
-
-{% block content %}
-
-{% endblock %}
-
+<div class="page-wrap">
+{% block content %}{% endblock %}
 </div>
+
+<script>
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+  },{threshold:.1});
+  revealEls.forEach(el=>io.observe(el));
+</script>
 
 </body>
 </html>

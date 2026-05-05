@@ -1,129 +1,127 @@
-{% extends "navbar.html" %}
-
+{% extends 'navbar.html' %}
 {% block content %}
 
-<div class="p-6 bg-gray-100 min-h-screen">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  .admin-tabs{display:flex;gap:4px;background:#fff;border:.5px solid #e5e7eb;border-radius:12px;padding:5px;width:fit-content;margin-bottom:20px;}
+  .admin-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;text-decoration:none;transition:background .15s,color .15s;}
+  .admin-tab:hover{background:#f3f4f6;color:#111;}
+  .admin-tab.active{background:#0a2e1a;color:#4ade80;}
+  .dashboard-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px;}
+  .kpi-card{background:#fff;border:.5px solid #e5e7eb;border-radius:18px;padding:22px 24px;transition:transform .15s,box-shadow .2s;}
+  .kpi-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.07);}
+  .kpi-icon{font-size:22px;margin-bottom:8px;}
+  .kpi-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:#111;line-height:1;}
+  .kpi-val.green{color:#22c55e;}
+  .kpi-val.red{color:#ef4444;}
+  .kpi-val.amber{color:#f59e0b;}
+  .kpi-label{font-size:12px;color:#6b7280;margin-top:6px;}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+  .panel{background:#fff;border:.5px solid #e5e7eb;border-radius:18px;padding:24px;}
+  .panel-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#111;margin-bottom:16px;}
+  .actions-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .quick-btn{padding:9px 18px;border-radius:9px;font-size:13px;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:opacity .15s;}
+  .quick-btn:hover{opacity:.85;}
+  .qb-green{background:#d1fae5;color:#065f46;}
+  .qb-red{background:#fee2e2;color:#991b1b;}
+  .qb-blue{background:#dbeafe;color:#1e40af;}
+  .qb-amber{background:#fef3c7;color:#92400e;}
+  @media(max-width:768px){.two-col{grid-template-columns:1fr;}}
+</style>
 
-  <!-- NAVBAR LINKS -->
-  <div class="flex gap-6 mb-6 text-gray-600 font-medium">
-    <a href="/admin-dashboard/" class="hover:text-green-600">Dashboard</a>
-    <a href="/admin/bins/" class="hover:text-green-600">Bins</a>
-    <a href="/admin/pickups/" class="hover:text-green-600">Pickups</a>
-    <a href="/admin/reports/" class="hover:text-green-600">Reports</a>
-    <a href="/dashboard/" class="hover:text-green-600">City Map</a>
-  </div>
-
-  <!-- TITLE -->
-  <h1 class="text-3xl font-bold text-green-600 mb-6">
-    Admin Dashboard
-  </h1>
-
-  <!-- ALERTS -->
-  <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-6 rounded">
-    <h3 class="font-bold text-red-600">⚠️ Alerts</h3>
-    <p>{{ full_bins }} bins are full and need immediate pickup</p>
-  </div>
-
-  <!-- GRID -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-
-    <!-- TOTAL BINS -->
-    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
-      <h3 class="text-gray-500">🗑️ Total Smart Bins</h3>
-      <p class="text-3xl font-bold mt-2">{{ total_bins }}</p>
-    </div>
-
-    <!-- FULL BINS -->
-    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
-      <h3 class="text-gray-500">🚨 Full Bins</h3>
-      <p class="text-3xl font-bold text-red-600 mt-2">{{ full_bins }}</p>
-    </div>
-
-    <!-- PENDING PICKUPS -->
-    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
-      <h3 class="text-gray-500">⏳ Pending Pickups</h3>
-      <p class="text-3xl font-bold text-yellow-500 mt-2">{{ pending_pickups }}</p>
-    </div>
-
-    <!-- REPORTS -->
-    <div class="bg-white p-6 rounded-2xl shadow hover:shadow-lg transition">
-      <h3 class="text-gray-500">📢 Garbage Reports</h3>
-      <p class="text-3xl font-bold mt-2">{{ reports }}</p>
-    </div>
-
-  </div>
-
-  <!-- SECOND ROW -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-
-    <!-- FILL LEVEL -->
-    <div class="bg-white p-6 rounded-2xl shadow">
-      <h3 class="text-gray-500 mb-3">📊 Avg Fill Level</h3>
-
-      <div class="w-full bg-gray-200 rounded-full h-3">
-        <div class="bg-green-500 h-3 rounded-full"
-             style="width: {{ avg_fill_level }}%">
-        </div>
-      </div>
-
-      <p class="mt-2 font-bold">{{ avg_fill_level }}%</p>
-    </div>
-
-    <!-- AI PREDICTION -->
-    <div class="bg-white p-6 rounded-2xl shadow">
-      <h3 class="text-gray-500">🤖 AI Prediction</h3>
-      <p class="text-xl font-bold text-red-500 mt-2">
-        {{ predicted_bins|default:"3 bins will be full soon" }}
-      </p>
-    </div>
-
-  </div>
-
-  <!-- CHART -->
-  <div class="bg-white p-6 rounded-2xl shadow mt-6">
-    <h3 class="text-gray-500 mb-4">📈 Pickup Trends</h3>
-    <canvas id="pickupChart"></canvas>
-  </div>
-
-  <!-- QUICK ACTIONS -->
-  <div class="bg-white p-6 rounded-2xl shadow mt-6">
-    <h3 class="font-bold mb-4">⚡ Quick Actions</h3>
-
-    <div class="flex flex-wrap gap-4">
-      <a href="/admin/bins/" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">View Bins</a>
-      <a href="/admin/reports/" class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">View Reports</a>
-      <a href="/dashboard/" class="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600">Live Map</a>
-      <a href="/admin-dashboard/pickups/" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Manage Pickups</a>
-    </div>
-  </div>
-
-  <!-- MAP PREVIEW -->
-  <div class="bg-white p-6 rounded-2xl shadow mt-6">
-    <h3 class="text-gray-500 mb-4">🗺️ City Overview</h3>
-    <iframe src="/dashboard/" class="w-full h-64 rounded"></iframe>
-  </div>
-
+<div class="page-header reveal">
+  <div class="page-header-tag">⚙️ Admin</div>
+  <h1>Admin <span>Dashboard</span></h1>
+  <p>Monitor bins, pickups, and reports across the city in real time.</p>
 </div>
 
-<!-- CHART JS -->
+<!-- TABS -->
+<div class="admin-tabs reveal">
+  <a href="/admin-dashboard/" class="admin-tab active">Dashboard</a>
+  <a href="/admin/bins/" class="admin-tab">Bins</a>
+  <a href="/admin/pickups/" class="admin-tab">Pickups</a>
+  <a href="/admin/reports/" class="admin-tab">Reports</a>
+  <a href="/dashboard/" class="admin-tab">City Map</a>
+</div>
+
+<!-- ALERT -->
+{% if full_bins %}
+<div class="alert alert-red reveal">
+  ⚠️ <span><strong>{{ full_bins }} bin{{ full_bins|pluralize }}</strong> are full and need immediate pickup.</span>
+</div>
+{% endif %}
+
+<!-- KPIs -->
+<div class="dashboard-grid reveal">
+  <div class="kpi-card">
+    <div class="kpi-icon">🗑️</div>
+    <div class="kpi-val green">{{ total_bins }}</div>
+    <div class="kpi-label">Total Smart Bins</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">🚨</div>
+    <div class="kpi-val red">{{ full_bins }}</div>
+    <div class="kpi-label">Full Bins</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">⏳</div>
+    <div class="kpi-val amber">{{ pending_pickups }}</div>
+    <div class="kpi-label">Pending Pickups</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-icon">📢</div>
+    <div class="kpi-val">{{ reports }}</div>
+    <div class="kpi-label">Garbage Reports</div>
+  </div>
+</div>
+
+<!-- AVG FILL + AI -->
+<div class="two-col reveal">
+  <div class="panel">
+    <div class="panel-title">📊 Average Fill Level</div>
+    <div class="progress-wrap">
+      <div class="progress-bar" style="width:{{ avg_fill_level }}%;"></div>
+    </div>
+    <p style="font-family:'Syne',sans-serif;font-size:24px;font-weight:700;color:#22c55e;margin-top:10px;">{{ avg_fill_level }}%</p>
+  </div>
+  <div class="panel">
+    <div class="panel-title">🤖 AI Prediction</div>
+    <p style="font-size:18px;font-weight:600;color:#ef4444;">{{ predicted_bins|default:"3 bins will be full soon" }}</p>
+    <p style="font-size:12px;color:#9ca3af;margin-top:8px;">Based on current fill rates and historical patterns.</p>
+  </div>
+</div>
+
+<!-- CHART -->
+<div class="panel reveal" style="margin-bottom:16px;">
+  <div class="panel-title">📈 Pickup Trends</div>
+  <canvas id="pickupChart" height="80"></canvas>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="panel reveal">
+  <div class="panel-title">⚡ Quick Actions</div>
+  <div class="actions-row">
+    <a href="/admin/bins/" class="quick-btn qb-green">🗑️ View Bins</a>
+    <a href="/admin/reports/" class="quick-btn qb-red">📢 View Reports</a>
+    <a href="/dashboard/" class="quick-btn qb-blue">🗺️ Live Map</a>
+    <a href="/admin-dashboard/pickups/" class="quick-btn qb-amber">⏳ Manage Pickups</a>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
-const ctx = document.getElementById('pickupChart');
-
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-    datasets: [{
-      label: 'Pickups',
-      data: [12, 19, 8, 15, 10, 20],
-      tension: 0.4
+new Chart(document.getElementById('pickupChart'),{
+  type:'line',
+  data:{
+    labels:['Mon','Tue','Wed','Thu','Fri','Sat'],
+    datasets:[{
+      label:'Pickups',data:[12,19,8,15,10,20],
+      tension:.4,fill:true,
+      borderColor:'#22c55e',backgroundColor:'rgba(34,197,94,.08)',
+      pointBackgroundColor:'#22c55e',pointRadius:4
     }]
   },
-  options: {
-    responsive: true
-  }
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,grid:{color:'#f3f4f6'}}}}
 });
 </script>
 

@@ -1,70 +1,57 @@
-<html>
-<head>
-    <title>User Profile</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-4">User Profile</h1>
-        <div class="bg-white rounded-lg shadow-md p-6">
-            <h2 class="text-xl font-semibold mb-2">John Doe</h2>
-            <p class="text-gray-600 mb-4">
-                Email:
-                Name:
-                Location:
-                Member since:
-            </p>
-            <a href="/reports/" class="text-blue-500 hover:underline">View My
-    Reports</a>
-        </div>  
-    </div>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            color: #2c3e50;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
-            color: #7f8c8d;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-        
-        input[type="text"],
-        input[type="email"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-            font-size: 14px;
-        }
+{% extends 'navbar.html' %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  .profile-grid{display:grid;grid-template-columns:300px 1fr;gap:20px;align-items:start;}
+  .profile-sidebar{background:#fff;border:.5px solid #e5e7eb;border-radius:20px;padding:32px 28px;text-align:center;}
+  .avatar{width:88px;height:88px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:32px;font-weight:700;color:#fff;margin:0 auto 16px;}
+  .profile-name{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;color:#111;margin-bottom:4px;}
+  .profile-role{font-size:12px;color:#6b7280;margin-bottom:20px;}
+  .divider{border:none;border-top:.5px solid #e5e7eb;margin:16px 0;}
+  .info-row{display:flex;justify-content:space-between;align-items:center;font-size:13px;padding:8px 0;}
+  .info-row-label{color:#9ca3af;}
+  .info-row-val{color:#111;font-weight:500;}
+  .profile-main-card{background:#fff;border:.5px solid #e5e7eb;border-radius:20px;padding:28px;margin-bottom:16px;}
+  .profile-section-title{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:#111;margin-bottom:18px;}
+  .form-group{margin-bottom:18px;}
+  @media(max-width:768px){.profile-grid{grid-template-columns:1fr;}}
 </style>
-</body>
-</html>
+
+<div class="page-header reveal">
+  <div class="page-header-tag">👤 Account</div>
+  <h1>User <span>Profile</span></h1>
+  <p>Manage your account details and track your community contributions.</p>
+</div>
+
+<div class="profile-grid">
+  <div class="profile-sidebar reveal">
+    <div class="avatar">{{ request.user.username|first|upper|default:"U" }}</div>
+    <div class="profile-name">{{ request.user.get_full_name|default:request.user.username|default:"John Doe" }}</div>
+    <div class="profile-role">Community Member</div>
+    <hr class="divider">
+    <div class="info-row"><span class="info-row-label">Email</span><span class="info-row-val">{{ request.user.email|default:"—" }}</span></div>
+    <div class="info-row"><span class="info-row-label">Member since</span><span class="info-row-val">{{ request.user.date_joined|date:"M Y"|default:"—" }}</span></div>
+    <hr class="divider">
+    <a href="/reports/" class="btn-primary" style="width:100%;justify-content:center;margin-top:4px;">View My Reports</a>
+  </div>
+  <div class="reveal">
+    <div class="profile-main-card">
+      <div class="profile-section-title">Account Details</div>
+      <div class="form-group"><label class="form-label">Username</label><input class="form-input" type="text" value="{{ request.user.username|default:'johndoe' }}" readonly style="background:#f9fafb;cursor:default;"></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" value="{{ request.user.email|default:'' }}" readonly style="background:#f9fafb;cursor:default;"></div>
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" type="text" value="{{ request.user.get_full_name|default:'' }}" readonly style="background:#f9fafb;cursor:default;"></div>
+    </div>
+    <div class="profile-main-card">
+      <div class="profile-section-title">Quick Links</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="/report/" class="btn-primary">+ New Report</a>
+        <a href="/reports/" class="btn-outline">My Reports</a>
+        <a href="/feedback/" class="btn-outline">Give Feedback</a>
+        <a href="/dashboard/" class="btn-outline">City Map</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,112 +1,78 @@
-{% extends "navbar.html" %}
-
+{% extends 'navbar.html' %}
 {% block content %}
 
-<h1 class="text-3xl font-bold text-green-600 mb-6">
-Manage Smart Bins
-</h1>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  .admin-tabs{display:flex;gap:4px;background:#fff;border:.5px solid #e5e7eb;border-radius:12px;padding:5px;width:fit-content;margin-bottom:20px;}
+  .admin-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;text-decoration:none;transition:background .15s,color .15s;}
+  .admin-tab:hover{background:#f3f4f6;color:#111;}
+  .admin-tab.active{background:#0a2e1a;color:#4ade80;}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+</style>
 
-<div class="mb-4">
-<a href="/admin/add-bin/" 
-class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-+ Add New Bin
-</a>
+<div class="page-header reveal">
+  <div class="page-header-tag">🗑️ Admin</div>
+  <h1>Manage Smart <span>Bins</span></h1>
+  <p>View, add, edit, and remove smart bins across the city network.</p>
 </div>
 
-<div class="bg-white shadow rounded">
-
-<table class="w-full">
-
-<thead class="bg-gray-100 text-left">
-
-<tr>
-<th class="p-3">Location</th>
-<th class="p-3">Fill Level</th>
-<th class="p-3">Status</th>
-<th class="p-3">Action</th>
-</tr>
-
-</thead>
-
-<tbody>
-
-{% for bin in bins %}
-
-<tr class="border-t">
-
-<td class="p-3">
-📍 {{bin.location}}
-</td>
-
-<td class="p-3">
-
-<div class="w-full bg-gray-200 rounded h-3">
-
-<div class="h-3 rounded
-{% if bin.fill_level < 50 %}
-bg-green-500
-{% elif bin.fill_level < 80 %}
-bg-yellow-500
-{% else %}
-bg-red-500
-{% endif %}"
-style="width: {{bin.fill_level}}%">
+<div class="admin-tabs reveal">
+  <a href="/admin-dashboard/" class="admin-tab">Dashboard</a>
+  <a href="/admin/bins/" class="admin-tab active">Bins</a>
+  <a href="/admin/pickups/" class="admin-tab">Pickups</a>
+  <a href="/admin/reports/" class="admin-tab">Reports</a>
+  <a href="/dashboard/" class="admin-tab">City Map</a>
 </div>
 
+<div class="top-bar reveal">
+  <span class="section-label" style="margin:0;">{{ bins|length }} bin{{ bins|length|pluralize }} registered</span>
+  <a href="/admin/add-bin/" class="btn-primary">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    Add New Bin
+  </a>
 </div>
 
-<p class="text-sm mt-1">{{bin.fill_level}}%</p>
-
-</td>
-
-<td class="p-3">
-
-{% if bin.status == "full" %}
-
-<span class="bg-red-100 text-red-700 px-2 py-1 rounded text-sm">
-Full
-</span>
-
-{% else %}
-
-<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-sm">
-Empty
-</span>
-
-{% endif %}
-
-</td>
-
-<td class="p-3 space-x-2">
-
-<a href="/admin/edit-bin/{{bin.id}}/"
-class="bg-blue-500 text-white px-3 py-1 rounded text-sm">
-Edit
-</a>
-
-<a href="/admin/delete-bin/{{bin.id}}/"
-class="bg-red-500 text-white px-3 py-1 rounded text-sm">
-Delete
-</a>
-
-</td>
-
-</tr>
-
-{% empty %}
-
-<tr>
-<td colspan="4" class="p-4 text-center text-gray-500">
-No smart bins added yet
-</td>
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
+<div class="table-wrap reveal">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Location</th>
+        <th>Fill Level</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for bin in bins %}
+    <tr>
+      <td>📍 {{ bin.location }}</td>
+      <td style="min-width:160px;">
+        <div class="fill-bar-wrap">
+          <div class="fill-bar {% if bin.fill_level < 50 %}green{% elif bin.fill_level < 80 %}amber{% else %}red{% endif %}" style="width:{{ bin.fill_level }}%;"></div>
+        </div>
+        <span style="font-size:12px;color:#6b7280;margin-top:4px;display:block;">{{ bin.fill_level }}%</span>
+      </td>
+      <td>
+        {% if bin.status == "full" %}
+          <span class="badge badge-red">Full</span>
+        {% else %}
+          <span class="badge badge-green">OK</span>
+        {% endif %}
+      </td>
+      <td>
+        <div style="display:flex;gap:8px;">
+          <a href="/admin/edit-bin/{{ bin.id }}/" class="btn-outline" style="padding:6px 13px;font-size:12px;">Edit</a>
+          <a href="/admin/delete-bin/{{ bin.id }}/" class="btn-danger">Delete</a>
+        </div>
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="4" style="text-align:center;padding:40px;color:#9ca3af;">No smart bins added yet.</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 {% endblock %}

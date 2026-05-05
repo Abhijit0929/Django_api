@@ -1,501 +1,164 @@
 {% extends 'navbar.html' %}
-
 {% block content %}
-
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  .page{font-family:'DM Sans',sans-serif;color:#1a1a1a;overflow-x:hidden;}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  .page {
-    font-family: 'DM Sans', sans-serif;
-    color: #1a1a1a;
+  /* HERO */
+  .hero{
+    position:relative;background:#060f08;border-radius:24px;
+    padding:64px 56px;margin-bottom:20px;overflow:hidden;
+    min-height:420px;display:flex;flex-direction:column;justify-content:center;
   }
+  #hero-canvas{position:absolute;top:0;right:0;width:55%;height:100%;pointer-events:none;opacity:.9;}
+  .hero-content{position:relative;z-index:2;max-width:520px;}
 
-  /* ── HERO ── */
-  .hero {
-    position: relative;
-    background: #0a2e1a;
-    border-radius: 20px;
-    padding: 64px 56px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    min-height: 340px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  .hero-tag{
+    display:inline-flex;align-items:center;gap:6px;
+    background:rgba(34,197,94,.18);border:1px solid rgba(34,197,94,.35);
+    color:#86efac;font-size:12px;font-weight:500;letter-spacing:.08em;
+    text-transform:uppercase;padding:5px 12px;border-radius:100px;margin-bottom:20px;
   }
+  .hero-tag-dot{width:6px;height:6px;background:#4ade80;border-radius:50%;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.7);}}
 
-  .hero-orbs { position: absolute; inset: 0; pointer-events: none; }
+  .hero h1{font-family:'Syne',sans-serif;font-size:52px;font-weight:800;color:#fff;line-height:1.05;margin-bottom:16px;letter-spacing:-.02em;}
+  .hero h1 span{color:#4ade80;}
+  .hero>div>p{font-size:16px;color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:32px;}
 
-  .orb { position: absolute; border-radius: 50%; opacity: 0.18; }
-  .orb1 { width: 320px; height: 320px; background: #22c55e; top: -80px; right: -60px; }
-  .orb2 { width: 180px; height: 180px; background: #4ade80; bottom: -60px; left: 30%; }
-  .orb3 { width: 100px; height: 100px; background: #86efac; top: 30px; right: 220px; opacity: 0.1; }
+  .hero-btns{display:flex;gap:10px;flex-wrap:wrap;}
+  .btn-primary{background:#22c55e;color:#052e0f;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;padding:12px 22px;border-radius:10px;border:none;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .2s,transform .15s;}
+  .btn-primary:hover{background:#16a34a;transform:translateY(-1px);}
+  .btn-secondary{background:rgba(255,255,255,.07);color:rgba(255,255,255,.85);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:400;padding:12px 22px;border-radius:10px;border:1px solid rgba(255,255,255,.13);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:background .2s,transform .15s;}
+  .btn-secondary:hover{background:rgba(255,255,255,.13);transform:translateY(-1px);}
 
-  .hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(34,197,94,0.18);
-    border: 1px solid rgba(34,197,94,0.35);
-    color: #86efac;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 5px 12px;
-    border-radius: 100px;
-    width: fit-content;
-    margin-bottom: 20px;
+  /* STAT STRIP */
+  .hero-stat-strip{position:absolute;right:56px;bottom:36px;display:flex;gap:12px;z-index:2;}
+  .stat-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:16px 20px;min-width:120px;transition:transform .2s,background .2s;cursor:default;}
+  .stat-card:hover{background:rgba(255,255,255,.11);transform:translateY(-3px);}
+  .stat-num{font-family:'Syne',sans-serif;font-size:26px;font-weight:700;color:#4ade80;line-height:1;}
+  .stat-label{font-size:11px;color:rgba(255,255,255,.45);margin-top:4px;letter-spacing:.04em;}
+
+  /* SECTION */
+  .section-label{font-size:11px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:#22c55e;margin-bottom:10px;display:block;}
+
+  /* 3D BIN FEATURE CARDS */
+  .section-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+  .feature-card{
+    background:#fff;border:.5px solid #e5e7eb;border-radius:20px;padding:24px;
+    cursor:pointer;position:relative;overflow:hidden;
+    transition:border-color .2s,box-shadow .2s;
+    transform-style:preserve-3d;
   }
+  .feature-card:hover{border-color:#9ca3af;box-shadow:0 16px 40px rgba(0,0,0,.1);}
+  .bin-canvas-wrap{width:100%;height:140px;margin-bottom:12px;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#f0fdf4,#dcfce7);}
+  .bin-canvas-wrap canvas{width:100%!important;height:100%!important;}
+  .icon-blue-bg .bin-canvas-wrap{background:linear-gradient(135deg,#eff6ff,#dbeafe);}
+  .icon-amber-bg .bin-canvas-wrap{background:linear-gradient(135deg,#fffbeb,#fef3c7);}
+  .feature-card h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:#111;margin-bottom:8px;}
+  .feature-card p{font-size:13px;color:#6b7280;line-height:1.6;}
+  .feature-arrow{position:absolute;bottom:20px;right:20px;width:28px;height:28px;border-radius:50%;background:#f3f4f6;display:flex;align-items:center;justify-content:center;font-size:13px;color:#6b7280;transition:background .15s,transform .15s;}
+  .feature-card:hover .feature-arrow{background:#d1fae5;transform:rotate(45deg);}
 
-  .hero-tag-dot {
-    width: 6px; height: 6px;
-    background: #4ade80;
-    border-radius: 50%;
-    animation: pulse 2s ease-in-out infinite;
-  }
+  /* BOTTOM ROW */
+  .bottom-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.5; transform: scale(0.7); }
-  }
+  /* IMPACT CARD with mini 3D globe */
+  .impact-card{background:#0a2e1a;border-radius:20px;padding:28px;position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;}
+  #globe-canvas{position:absolute;right:-20px;top:50%;transform:translateY(-50%);width:200px;height:200px;opacity:.55;pointer-events:none;}
+  .impact-card h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:10px;line-height:1.2;position:relative;z-index:1;}
+  .impact-card h2 em{font-style:normal;color:#4ade80;}
+  .impact-card p{font-size:13px;color:rgba(255,255,255,.55);line-height:1.65;margin-bottom:20px;position:relative;z-index:1;}
+  .btn-light{background:#4ade80;color:#052e0f;font-size:13px;font-weight:500;padding:10px 18px;border-radius:8px;border:none;cursor:pointer;display:inline-flex;align-items:center;gap:5px;text-decoration:none;width:fit-content;transition:background .2s,transform .15s;position:relative;z-index:1;}
+  .btn-light:hover{background:#22c55e;transform:translateY(-1px);}
 
-  .hero h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: 52px;
-    font-weight: 800;
-    color: #ffffff;
-    line-height: 1.05;
-    margin-bottom: 16px;
-    letter-spacing: -0.02em;
-  }
+  /* FEEDBACK CARD */
+  .feedback-card{background:#fff;border:.5px solid #e5e7eb;border-radius:20px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;}
+  .feedback-card h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#111;margin-bottom:10px;}
+  .feedback-card p{font-size:13px;color:#6b7280;line-height:1.65;margin-bottom:20px;}
+  .stars{display:flex;gap:4px;margin-bottom:16px;}
+  .star{width:36px;height:36px;border-radius:8px;border:.5px solid #e5e7eb;background:#f9fafb;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:background .15s,transform .15s;color:#d1d5db;}
+  .star:hover,.star.active{background:#fef3c7;color:#f59e0b;transform:scale(1.15);}
+  .btn-outline{background:transparent;color:#111;font-size:13px;font-weight:500;padding:10px 18px;border-radius:8px;border:.5px solid #9ca3af;cursor:pointer;display:inline-flex;align-items:center;gap:5px;text-decoration:none;width:fit-content;transition:border-color .2s,background .2s;}
+  .btn-outline:hover{background:#f9fafb;border-color:#6b7280;}
 
-  .hero h1 span { color: #4ade80; }
+  /* JOIN */
+  .join-banner{background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:20px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;gap:20px;border:.5px solid #bbf7d0;}
+  .join-left h2{font-family:'Syne',sans-serif;font-size:20px;font-weight:700;color:#111;margin-bottom:5px;}
+  .join-left p{font-size:13px;color:#6b7280;max-width:420px;line-height:1.55;}
+  .join-btn{background:#0a2e1a;color:#4ade80;font-size:13px;font-weight:500;padding:12px 22px;border-radius:10px;border:none;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px;text-decoration:none;transition:background .2s,transform .15s;}
+  .join-btn:hover{background:#113d24;transform:translateY(-1px);}
 
-  .hero p {
-    font-size: 16px;
-    color: rgba(255,255,255,0.6);
-    line-height: 1.6;
-    max-width: 520px;
-    margin-bottom: 32px;
-  }
+  /* SCROLL REVEAL */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .6s ease,transform .6s ease;}
+  .reveal.visible{opacity:1;transform:none;}
 
-  .hero-btns { display: flex; gap: 10px; flex-wrap: wrap; }
-
-  .btn-primary {
-    background: #22c55e;
-    color: #052e0f;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    padding: 12px 22px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.2s;
-  }
-  .btn-primary:hover { background: #16a34a; }
-
-  .btn-secondary {
-    background: rgba(255,255,255,0.07);
-    color: rgba(255,255,255,0.85);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 400;
-    padding: 12px 22px;
-    border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.13);
-    cursor: pointer;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    transition: background 0.2s;
-  }
-  .btn-secondary:hover { background: rgba(255,255,255,0.13); }
-
-  /* stat strip inside hero */
-  .hero-stat-strip {
-    position: absolute;
-    right: 56px;
-    top: 50%;
-    transform: translateY(-50%);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .stat-card {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 14px;
-    padding: 16px 20px;
-    min-width: 130px;
-  }
-
-  .stat-num {
-    font-family: 'Syne', sans-serif;
-    font-size: 26px;
-    font-weight: 700;
-    color: #4ade80;
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: 11px;
-    color: rgba(255,255,255,0.45);
-    margin-top: 4px;
-    letter-spacing: 0.04em;
-  }
-
-  /* ── FEATURE CARDS ── */
-  .section-label {
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #22c55e;
-    margin-bottom: 10px;
-    display: block;
-  }
-
-  .section-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-
-  .feature-card {
-    background: #fff;
-    border: 0.5px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 24px;
-    cursor: pointer;
-    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .feature-card:hover {
-    border-color: #9ca3af;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.07);
-  }
-
-  .feature-icon-wrap {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 14px;
-    font-size: 20px;
-  }
-
-  .icon-green { background: #d1fae5; }
-  .icon-blue  { background: #dbeafe; }
-  .icon-amber { background: #fef3c7; }
-
-  .feature-card h3 {
-    font-family: 'Syne', sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    color: #111;
-    margin-bottom: 8px;
-  }
-
-  .feature-card p {
-    font-size: 13px;
-    color: #6b7280;
-    line-height: 1.6;
-  }
-
-  .feature-arrow {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #f3f4f6;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 13px;
-    color: #6b7280;
-  }
-
-  /* ── BOTTOM ROW ── */
-  .bottom-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 20px;
-  }
-
-  /* impact card */
-  .impact-card {
-    background: #0a2e1a;
-    border-radius: 16px;
-    padding: 28px;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .impact-card::before {
-    content: '';
-    position: absolute;
-    top: -40px; right: -40px;
-    width: 160px; height: 160px;
-    background: #22c55e;
-    border-radius: 50%;
-    opacity: 0.12;
-  }
-
-  .impact-card h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 10px;
-    line-height: 1.2;
-  }
-
-  .impact-card h2 em { font-style: normal; color: #4ade80; }
-
-  .impact-card p {
-    font-size: 13px;
-    color: rgba(255,255,255,0.55);
-    line-height: 1.65;
-    margin-bottom: 20px;
-  }
-
-  .btn-light {
-    background: #4ade80;
-    color: #052e0f;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    text-decoration: none;
-    width: fit-content;
-    transition: background 0.2s;
-  }
-  .btn-light:hover { background: #22c55e; }
-
-  /* feedback card */
-  .feedback-card {
-    background: #fff;
-    border: 0.5px solid #e5e7eb;
-    border-radius: 16px;
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-
-  .feedback-card h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #111;
-    margin-bottom: 10px;
-  }
-
-  .feedback-card p {
-    font-size: 13px;
-    color: #6b7280;
-    line-height: 1.65;
-    margin-bottom: 20px;
-  }
-
-  .stars { display: flex; gap: 4px; margin-bottom: 16px; }
-
-  .star {
-    width: 32px; height: 32px;
-    border-radius: 6px;
-    border: 0.5px solid #e5e7eb;
-    background: #f9fafb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background 0.15s, transform 0.1s;
-    color: #d1d5db;
-  }
-
-  .star:hover, .star.active { background: #fef3c7; color: #f59e0b; transform: scale(1.1); }
-
-  .btn-outline {
-    background: transparent;
-    color: #111;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: 0.5px solid #9ca3af;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    text-decoration: none;
-    width: fit-content;
-    transition: border-color 0.2s, background 0.2s;
-  }
-  .btn-outline:hover { background: #f9fafb; border-color: #6b7280; }
-
-  /* ── JOIN BANNER ── */
-  .join-banner {
-    background: #f3f4f6;
-    border-radius: 16px;
-    padding: 28px 32px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-  }
-
-  .join-left h2 {
-    font-family: 'Syne', sans-serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: #111;
-    margin-bottom: 5px;
-  }
-
-  .join-left p {
-    font-size: 13px;
-    color: #6b7280;
-    max-width: 420px;
-    line-height: 1.55;
-  }
-
-  .join-btn {
-    background: #0a2e1a;
-    color: #4ade80;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 12px 22px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-    white-space: nowrap;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    text-decoration: none;
-    transition: background 0.2s;
-  }
-  .join-btn:hover { background: #113d24; }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 768px) {
-    .hero { padding: 40px 28px 200px; }
-    .hero h1 { font-size: 36px; }
-    .hero-stat-strip { position: static; transform: none; flex-direction: row; flex-wrap: wrap; margin-top: 28px; }
-    .section-grid { grid-template-columns: 1fr; }
-    .bottom-row { grid-template-columns: 1fr; }
-    .join-banner { flex-direction: column; align-items: flex-start; }
+  @media(max-width:768px){
+    .hero{padding:40px 24px 200px;}
+    .hero h1{font-size:34px;}
+    #hero-canvas{width:100%;top:auto;bottom:0;height:200px;}
+    .hero-stat-strip{position:static;transform:none;flex-wrap:wrap;margin-top:24px;}
+    .section-grid{grid-template-columns:1fr;}
+    .bottom-row{grid-template-columns:1fr;}
+    .join-banner{flex-direction:column;align-items:flex-start;}
   }
 </style>
 
 <div class="page">
 
-  <!-- ── HERO ── -->
+  <!-- HERO -->
   <div class="hero">
-    <div class="hero-orbs">
-      <div class="orb orb1"></div>
-      <div class="orb orb2"></div>
-      <div class="orb orb3"></div>
+    <canvas id="hero-canvas"></canvas>
+    <div class="hero-content">
+      <div class="hero-tag"><div class="hero-tag-dot"></div>Live City Network</div>
+      <h1>Smart <span>Waste</span><br>Management</h1>
+      <p>Help keep the city clean by reporting garbage and monitoring nearby smart bins. Together we can make our community cleaner and greener.</p>
+      <div class="hero-btns">
+        <a href="/report/" class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Report Waste
+        </a>
+        <a href="/bins/" class="btn-secondary">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2a4 4 0 1 0 0 8A4 4 0 0 0 8 2z" stroke="currentColor" stroke-width="1.4"/><path d="M8 10v4M5.5 12.5l2.5 1.5 2.5-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Find Nearby Bins
+        </a>
+      </div>
     </div>
-
-    <div class="hero-tag">
-      <div class="hero-tag-dot"></div>
-      Live City Network
-    </div>
-
-    <h1>Smart <span>Waste</span><br>Management</h1>
-    <p>Help keep the city clean by reporting garbage and monitoring nearby smart bins. Together we can make our community cleaner and greener.</p>
-
-    <div class="hero-btns">
-      <a href="/report/" class="btn-primary">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        Report Waste
-      </a>
-      <a href="/bins/" class="btn-secondary">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 2a4 4 0 1 0 0 8A4 4 0 0 0 8 2z" stroke="currentColor" stroke-width="1.4"/><path d="M8 10v4M5.5 12.5l2.5 1.5 2.5-1.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-        Find Nearby Bins
-      </a>
-      <a href="/dashboard/" class="btn-secondary">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="2" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="2" y="9" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/><rect x="9" y="9" width="5" height="5" rx="1.5" stroke="currentColor" stroke-width="1.4"/></svg>
-        City Dashboard
-      </a>
-    </div>
-
     <div class="hero-stat-strip">
-      <div class="stat-card">
-        <div class="stat-num">2,847</div>
-        <div class="stat-label">Reports filed</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">94%</div>
-        <div class="stat-label">Resolved rate</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-num">138</div>
-        <div class="stat-label">Smart bins live</div>
-      </div>
+      <div class="stat-card"><div class="stat-num" data-count="2847">0</div><div class="stat-label">Reports filed</div></div>
+      <div class="stat-card"><div class="stat-num" data-count="94" data-suffix="%">0%</div><div class="stat-label">Resolved rate</div></div>
+      <div class="stat-card"><div class="stat-num" data-count="138">0</div><div class="stat-label">Smart bins live</div></div>
     </div>
   </div>
 
-  <!-- ── HOW IT WORKS ── -->
-  <span class="section-label" style="margin-left:4px;">How it works</span>
+  <!-- HOW IT WORKS -->
+  <span class="section-label reveal" style="margin-left:4px;">How it works</span>
   <div class="section-grid">
-
-    <div class="feature-card">
-      <div class="feature-icon-wrap icon-green">📍</div>
+    <div class="feature-card reveal">
+      <div class="bin-canvas-wrap"><canvas class="bin-canvas" data-color="#22c55e"></canvas></div>
       <h3>Nearby Bins</h3>
       <p>Locate smart bins in your area. Check their current capacity and status in real-time — always know where to go.</p>
       <div class="feature-arrow">↗</div>
     </div>
-
-    <div class="feature-card">
-      <div class="feature-icon-wrap icon-blue">🗑️</div>
+    <div class="feature-card icon-blue-bg reveal">
+      <div class="bin-canvas-wrap"><canvas class="bin-canvas" data-color="#3b82f6"></canvas></div>
       <h3>Report Waste</h3>
       <p>Quickly flag garbage or waste issues in your neighborhood. Your report routes directly to city response teams.</p>
       <div class="feature-arrow">↗</div>
     </div>
-
-    <div class="feature-card">
-      <div class="feature-icon-wrap icon-amber">📊</div>
+    <div class="feature-card icon-amber-bg reveal">
+      <div class="bin-canvas-wrap"><canvas class="bin-canvas" data-color="#f59e0b"></canvas></div>
       <h3>Track Reports</h3>
       <p>Monitor your reports and see live status updates. Earn community impact points for every contribution.</p>
       <div class="feature-arrow">↗</div>
     </div>
-
   </div>
 
-  <!-- ── IMPACT + FEEDBACK ── -->
+  <!-- IMPACT + FEEDBACK -->
   <div class="bottom-row">
-
-    <div class="impact-card">
+    <div class="impact-card reveal">
+      <canvas id="globe-canvas"></canvas>
       <div>
         <span class="section-label">Community impact</span>
         <h2>Make an <em>impact</em><br>on society</h2>
@@ -503,8 +166,7 @@
       </div>
       <a href="/reports/" class="btn-light">View my contributions →</a>
     </div>
-
-    <div class="feedback-card">
+    <div class="feedback-card reveal">
       <div>
         <span class="section-label">Your voice matters</span>
         <h2>We value your feedback</h2>
@@ -519,11 +181,10 @@
       </div>
       <a href="/feedback/" class="btn-outline">Give feedback →</a>
     </div>
-
   </div>
 
-  <!-- ── JOIN BANNER ── -->
-  <div class="join-banner">
+  <!-- JOIN -->
+  <div class="join-banner reveal">
     <div class="join-left">
       <h2>Join the movement</h2>
       <p>Become part of a growing community of eco-conscious citizens helping to build a cleaner, greener city for everyone.</p>
@@ -533,17 +194,271 @@
 
 </div>
 
+<!-- Three.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
 <script>
-  // Star rating interaction
-  const stars = document.querySelectorAll('.star');
-  stars.forEach(star => {
-    star.addEventListener('click', () => {
-      const val = parseInt(star.dataset.i);
-      stars.forEach(s => {
-        s.classList.toggle('active', parseInt(s.dataset.i) <= val);
-      });
+/* ── HERO REAL EARTH GLOBE ── */
+(function(){
+  const canvas = document.getElementById('hero-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+
+  function resize(){
+    const p = canvas.parentElement;
+    renderer.setSize(p.clientWidth * .55, p.clientHeight);
+    camera.aspect = canvas.width / canvas.height;
+    camera.updateProjectionMatrix();
+  }
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 100);
+  camera.position.set(0, 0, 4.2);
+
+  const loader = new THREE.TextureLoader();
+  // High-res free Earth textures (NASA Blue Marble via public CDN)
+  const earthDay  = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
+  const earthSpec = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg');
+  const earthNorm = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_normal_2048.jpg');
+  const earthClou = loader.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
+
+  // Earth
+  const earthGeo = new THREE.SphereGeometry(1.4, 64, 64);
+  const earthMat = new THREE.MeshPhongMaterial({
+    map: earthDay, specularMap: earthSpec, normalMap: earthNorm,
+    specular: new THREE.Color(0x333333), shininess: 25
+  });
+  const earth = new THREE.Mesh(earthGeo, earthMat);
+  scene.add(earth);
+
+  // Cloud layer
+  const cloudGeo = new THREE.SphereGeometry(1.43, 64, 64);
+  const cloudMat = new THREE.MeshPhongMaterial({
+    map: earthClou, transparent: true, opacity: 0.38, depthWrite: false
+  });
+  const clouds = new THREE.Mesh(cloudGeo, cloudMat);
+  scene.add(clouds);
+
+  // Atmosphere glow
+  const atmGeo = new THREE.SphereGeometry(1.52, 64, 64);
+  const atmMat = new THREE.MeshBasicMaterial({
+    color: 0x4fc3f7, transparent: true, opacity: 0.07, side: THREE.BackSide
+  });
+  scene.add(new THREE.Mesh(atmGeo, atmMat));
+
+  // Star particles
+  const pts=[], count=900;
+  for(let i=0;i<count;i++){
+    const r=2.0+Math.random()*1.2;
+    const th=Math.acos(2*Math.random()-1);
+    const ph=2*Math.PI*Math.random();
+    pts.push(r*Math.sin(th)*Math.cos(ph), r*Math.sin(th)*Math.sin(ph), r*Math.cos(th));
+  }
+  const ptGeo = new THREE.BufferGeometry();
+  ptGeo.setAttribute('position', new THREE.Float32BufferAttribute(pts,3));
+  const ptMat = new THREE.PointsMaterial({color:0xaaaacc, size:.018, transparent:true, opacity:.7});
+  scene.add(new THREE.Points(ptGeo, ptMat));
+
+  // Lights — sun from the right
+  scene.add(new THREE.AmbientLight(0x333355, 0.4));
+  const sun = new THREE.DirectionalLight(0xfff5e0, 2.2);
+  sun.position.set(5, 2, 3);
+  scene.add(sun);
+
+  // Mouse tilt
+  let mx=0, my=0;
+  document.addEventListener('mousemove', e=>{
+    mx = (e.clientX/window.innerWidth - .5)*2;
+    my = -(e.clientY/window.innerHeight - .5)*2;
+  });
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  (function animate(){
+    requestAnimationFrame(animate);
+    earth.rotation.y  += .0025;
+    clouds.rotation.y += .003;
+    earth.rotation.x  += (my*.12 - earth.rotation.x)*.04;
+    clouds.rotation.x  = earth.rotation.x;
+    renderer.render(scene, camera);
+  })();
+})();
+
+/* ── MINI REAL EARTH GLOBE (impact card) ── */
+(function(){
+  const canvas = document.getElementById('globe-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(200,200);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45,1,.1,100);
+  camera.position.z=2.8;
+
+  const loader2 = new THREE.TextureLoader();
+  const dayTex  = loader2.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_atmos_2048.jpg');
+  const specTex = loader2.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_specular_2048.jpg');
+  const clouTex = loader2.load('https://raw.githubusercontent.com/mrdoob/three.js/dev/examples/textures/planets/earth_clouds_1024.png');
+
+  const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(.9,48,48),
+    new THREE.MeshPhongMaterial({map:dayTex, specularMap:specTex, specular:new THREE.Color(0x222222), shininess:20})
+  );
+  scene.add(sphere);
+
+  const cloudMini = new THREE.Mesh(
+    new THREE.SphereGeometry(.92,32,32),
+    new THREE.MeshPhongMaterial({map:clouTex, transparent:true, opacity:.35, depthWrite:false})
+  );
+  scene.add(cloudMini);
+
+  // Atmosphere
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(.97,32,32),
+    new THREE.MeshBasicMaterial({color:0x4fc3f7, transparent:true, opacity:.06, side:THREE.BackSide})
+  ));
+
+  scene.add(new THREE.AmbientLight(0x334455,.5));
+  const sun2 = new THREE.DirectionalLight(0xfff5e0, 2.0);
+  sun2.position.set(4,2,3); scene.add(sun2);
+
+  (function loop(){
+    requestAnimationFrame(loop);
+    sphere.rotation.y    += .006;
+    cloudMini.rotation.y += .008;
+    renderer.render(scene,camera);
+  })();
+})();
+
+/* ── 3D WASTE BIN CARDS ── */
+document.querySelectorAll('.bin-canvas').forEach(function(canvas){
+  const color = canvas.dataset.color || '#22c55e';
+  const wrap = canvas.parentElement;
+  const w = wrap.clientWidth || 260;
+  const h = wrap.clientHeight || 140;
+
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  renderer.setSize(w,h);
+  renderer.shadowMap.enabled = true;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(40, w/h, .1, 100);
+  camera.position.set(0, 1.2, 3.5);
+  camera.lookAt(0,.2,0);
+
+  const c = parseInt(color.replace('#',''),16);
+
+  // Bin body
+  const bodyGeo = new THREE.CylinderGeometry(.45, .38, 1.1, 32);
+  const bodyMat = new THREE.MeshPhongMaterial({color:c, shininess:60});
+  const body = new THREE.Mesh(bodyGeo, bodyMat);
+  body.position.y = -.05;
+  body.castShadow = true;
+  scene.add(body);
+
+  // Lid
+  const lidGeo = new THREE.CylinderGeometry(.48, .48, .1, 32);
+  const lidMat = new THREE.MeshPhongMaterial({color:c, shininess:80});
+  const lid = new THREE.Mesh(lidGeo, lidMat);
+  lid.position.y = .62;
+  scene.add(lid);
+
+  // Handle
+  const handleGeo = new THREE.TorusGeometry(.12, .025, 8, 20, Math.PI);
+  const handleMat = new THREE.MeshPhongMaterial({color:0x555555, shininess:80});
+  const handle = new THREE.Mesh(handleGeo, handleMat);
+  handle.rotation.z = Math.PI;
+  handle.position.set(0, .75, 0);
+  scene.add(handle);
+
+  // Recycle symbol (torus rings)
+  const ring1 = new THREE.Mesh(new THREE.TorusGeometry(.25,.025,8,40), new THREE.MeshPhongMaterial({color:0xffffff,transparent:true,opacity:.35}));
+  ring1.position.y = .1;
+  ring1.rotation.x = Math.PI/2;
+  scene.add(ring1);
+
+  // Ground shadow plane
+  const plane = new THREE.Mesh(new THREE.CircleGeometry(.6,32), new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.08}));
+  plane.rotation.x = -Math.PI/2;
+  plane.position.y = -.62;
+  scene.add(plane);
+
+  scene.add(new THREE.AmbientLight(0xffffff,.7));
+  const dl = new THREE.DirectionalLight(0xffffff, .9);
+  dl.position.set(2,3,2); dl.castShadow=true; scene.add(dl);
+  const pl = new THREE.PointLight(c, .6, 8);
+  pl.position.set(-1,1,1); scene.add(pl);
+
+  let hovered = false;
+  const card = wrap.closest('.feature-card');
+  card.addEventListener('mouseenter',()=>hovered=true);
+  card.addEventListener('mouseleave',()=>hovered=false);
+
+  let t=0;
+  (function loop(){
+    requestAnimationFrame(loop);
+    t+=.02;
+    body.rotation.y += hovered ? .035 : .012;
+    lid.rotation.y = body.rotation.y;
+    handle.rotation.y = body.rotation.y;
+    ring1.rotation.y = body.rotation.y;
+    body.position.y = -.05 + Math.sin(t)*.025;
+    lid.position.y = .62 + Math.sin(t)*.025 + (hovered?.08:0);
+    renderer.render(scene,camera);
+  })();
+});
+
+/* ── ANIMATED COUNTERS ── */
+function animateCount(el){
+  const target = parseInt(el.dataset.count);
+  const suffix = el.dataset.suffix||'';
+  const duration=1800, step=16;
+  const steps=duration/step;
+  let cur=0,i=0;
+  const timer=setInterval(()=>{
+    i++;cur=Math.round(target*(i/steps));
+    el.textContent=cur.toLocaleString()+suffix;
+    if(i>=steps){el.textContent=target.toLocaleString()+suffix;clearInterval(timer);}
+  },step);
+}
+let counted=false;
+
+/* ── SCROLL REVEAL ── */
+const revealEls=document.querySelectorAll('.reveal');
+const io=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.classList.add('visible');
+      if(!counted){counted=true;document.querySelectorAll('[data-count]').forEach(animateCount);}
+    }
+  });
+},{threshold:.12});
+revealEls.forEach(el=>io.observe(el));
+
+// Immediately trigger counts if stats already visible
+setTimeout(()=>{
+  if(!counted){counted=true;document.querySelectorAll('[data-count]').forEach(animateCount);}
+},600);
+
+/* ── CARD 3D TILT ── */
+document.querySelectorAll('.feature-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width-.5)*14;
+    const y=-((e.clientY-r.top)/r.height-.5)*14;
+    card.style.transform=`perspective(600px) rotateX(${y}deg) rotateY(${x}deg) translateY(-3px)`;
+  });
+  card.addEventListener('mouseleave',()=>{card.style.transform='';});
+});
+
+/* ── STAR RATING ── */
+document.querySelectorAll('.star').forEach(star=>{
+  star.addEventListener('click',()=>{
+    const val=parseInt(star.dataset.i);
+    document.querySelectorAll('.star').forEach(s=>{
+      s.classList.toggle('active',parseInt(s.dataset.i)<=val);
     });
   });
+});
 </script>
-
 {% endblock %}

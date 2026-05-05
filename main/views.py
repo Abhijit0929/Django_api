@@ -178,20 +178,17 @@ def update_pickup(request, id):
     return redirect("/admin-dashboard/pickups/")
 
 def city_dashboard(request):
-    from django.shortcuts import redirect
+    if not request.user.is_authenticated:
+        return redirect("/")
 
-    if not request.user.is_staff:
-        return redirect("/dashboard/")
-    from django.shortcuts import redirect
-
-    if not request.user.is_staff:
-        return redirect("/dashboard/")
     bins = SmartBin.objects.all()
     reports = WasteReport.objects.all()
+    pickups = Pickup.objects.all()
 
     context = {
         "bins": bins,
-        "reports": reports
+        "reports": reports,
+        "pickups": pickups,
     }
 
     return render(request, "dashboard.html", context)

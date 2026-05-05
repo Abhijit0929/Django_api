@@ -1,231 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feedback - Smart Waste Management</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #6aea66 0%, #4ea24b 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
-        
-        .container {
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            max-width: 600px;
-            width: 100%;
-            padding: 40px;
-        }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-        
-        .subtitle {
-            color: #666;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        
-        .form-group {
-            margin-bottom: 20px;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        input[type="text"],
-        input[type="email"],
-        textarea,
-        select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-family: inherit;
-            font-size: 14px;
-            transition: border-color 0.3s;
-        }
-        
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        textarea:focus,
-        select:focus {
-            outline: none;
-            border-color: #85ea66;
-            box-shadow: 0 0 5px rgba(102, 126, 234, 0.1);
-        }
-        
-        textarea {
-            resize: vertical;
-            min-height: 150px;
-        }
-        
-        .rating-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .rating-group input[type="radio"] {
-            display: none;
-        }
-        
-        .rating-group label {
-            margin-bottom: 0;
-            cursor: pointer;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-weight: bold;
-            color: #999;
-            transition: all 0.3s;
-        }
-        
-        .rating-group input[type="radio"]:checked + label {
-            background: #75ea66;
-            color: white;
-            border-color: #7cea66;
-        }
-        
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(135deg, #75ea66 0%, #49d11f 100%);
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(68, 214, 48, 0.7);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        .success-message {
-            display: none;
-            background: #4caf50;
-            color: white;
-            padding: 15px;
-            border-radius: 5px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>We'd Love Your Feedback</h1>
-        <p class="subtitle">Help us improve the Smart Waste Management system</p>
-        
-        <div class="success-message" id="successMessage">
-            Thank you! Your feedback has been submitted successfully.
+{% extends 'navbar.html' %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  .feedback-wrap{max-width:680px;margin:0 auto;}
+  .feedback-wrap .page-header{margin-bottom:18px;border-radius:20px;padding:32px 36px;}
+  .feedback-card{background:#fff;border:.5px solid #e5e7eb;border-radius:20px;padding:36px;}
+  .form-group{margin-bottom:20px;}
+  .rating-row{display:flex;gap:8px;margin-top:8px;}
+  .rating-input{display:none;}
+  .rating-label{
+    width:44px;height:44px;border-radius:10px;border:1.5px solid #e5e7eb;
+    background:#f9fafb;display:flex;align-items:center;justify-content:center;
+    font-size:15px;font-weight:700;color:#9ca3af;cursor:pointer;
+    transition:all .15s;
+  }
+  .rating-input:checked + .rating-label{background:#fef3c7;border-color:#fbbf24;color:#d97706;}
+  .rating-label:hover{background:#fef9ee;border-color:#fbbf24;color:#f59e0b;}
+  .submit-btn{
+    width:100%;padding:13px;background:#22c55e;color:#052e0f;
+    font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
+    border:none;border-radius:11px;cursor:pointer;
+    transition:background .2s,transform .15s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .submit-btn:hover{background:#16a34a;transform:translateY(-1px);}
+  .success-toast{
+    display:none;background:#d1fae5;border:.5px solid #a7f3d0;color:#065f46;
+    padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:14px;
+    align-items:center;gap:10px;
+  }
+  .success-toast.show{display:flex;}
+</style>
+
+<div class="feedback-wrap">
+
+  <div class="page-header reveal">
+    <div class="page-header-tag">💬 Community</div>
+    <h1>Share Your <span>Feedback</span></h1>
+    <p>Help us improve the Smart Waste Management system — your thoughts shape the platform.</p>
+  </div>
+
+  <div class="success-toast" id="successToast">
+    ✅ <span>Thank you! Your feedback has been submitted successfully.</span>
+  </div>
+
+  <div class="feedback-card reveal">
+    <form id="feedbackForm" method="POST">
+      {% csrf_token %}
+
+      <div class="form-group">
+        <label class="form-label">Full Name <span style="color:#ef4444;">*</span></label>
+        <input type="text" name="name" id="name" required placeholder="Enter your name" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Email Address <span style="color:#ef4444;">*</span></label>
+        <input type="email" name="email" id="email" required placeholder="Enter your email" class="form-input">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Feedback Category <span style="color:#ef4444;">*</span></label>
+        <select name="category" id="category" required class="form-input">
+          <option value="">Select a category</option>
+          <option value="bug">🐛 Bug Report</option>
+          <option value="feature">✨ Feature Request</option>
+          <option value="improvement">📈 Improvement Suggestion</option>
+          <option value="general">💬 General Feedback</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Overall Rating <span style="color:#ef4444;">*</span></label>
+        <div class="rating-row">
+          <input type="radio" id="r1" name="rating" value="1" class="rating-input" required>
+          <label for="r1" class="rating-label">1</label>
+          <input type="radio" id="r2" name="rating" value="2" class="rating-input">
+          <label for="r2" class="rating-label">2</label>
+          <input type="radio" id="r3" name="rating" value="3" class="rating-input">
+          <label for="r3" class="rating-label">3</label>
+          <input type="radio" id="r4" name="rating" value="4" class="rating-input">
+          <label for="r4" class="rating-label">4</label>
+          <input type="radio" id="r5" name="rating" value="5" class="rating-input">
+          <label for="r5" class="rating-label">5</label>
         </div>
-        
-        <form id="feedbackForm">
-            <div class="form-group">
-                <label for="name">Full Name *</label>
-                <input type="text" id="name" name="name" required placeholder="Enter your name">
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Email Address *</label>
-                <input type="email" id="email" name="email" required placeholder="Enter your email">
-            </div>
-            
-            <div class="form-group">
-                <label for="category">Feedback Category *</label>
-                <select id="category" name="category" required>
-                    <option value="">Select a category</option>
-                    <option value="bug">Bug Report</option>
-                    <option value="feature">Feature Request</option>
-                    <option value="improvement">Improvement Suggestion</option>
-                    <option value="general">General Feedback</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label>Overall Rating *</label>
-                <div class="rating-group">
-                    <input type="radio" id="rate1" name="rating" value="1" required>
-                    <label for="rate1">1</label>
-                    
-                    <input type="radio" id="rate2" name="rating" value="2">
-                    <label for="rate2">2</label>
-                    
-                    <input type="radio" id="rate3" name="rating" value="3">
-                    <label for="rate3">3</label>
-                    
-                    <input type="radio" id="rate4" name="rating" value="4">
-                    <label for="rate4">4</label>
-                    
-                    <input type="radio" id="rate5" name="rating" value="5">
-                    <label for="rate5">5</label>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="message">Your Feedback *</label>
-                <textarea id="message" name="message" required placeholder="Please share your thoughts..."></textarea>
-            </div>
-            
-            <button type="submit">Submit Feedback</button>
-        </form>
-    </div>
-    
-    <script>
-        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                category: document.getElementById('category').value,
-                rating: document.querySelector('input[name="rating"]:checked').value,
-                message: document.getElementById('message').value
-            };
-            
-            console.log('Feedback submitted:', formData);
-            
-            document.getElementById('successMessage').style.display = 'block';
-            document.getElementById('feedbackForm').reset();
-            
-            setTimeout(() => {
-                document.getElementById('successMessage').style.display = 'none';
-            }, 5000);
-        });
-    </script>
-</body>
-</html>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Your Feedback <span style="color:#ef4444;">*</span></label>
+        <textarea name="message" id="message" required placeholder="Share your thoughts…" class="form-input"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Submit Feedback
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+document.getElementById('feedbackForm').addEventListener('submit', function(e){
+  // If Django handles POST, remove e.preventDefault()
+  e.preventDefault();
+  const toast = document.getElementById('successToast');
+  toast.classList.add('show');
+  this.reset();
+  setTimeout(()=>toast.classList.remove('show'), 5000);
+});
+</script>
+
+{% endblock %}
