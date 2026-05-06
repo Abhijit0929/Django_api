@@ -1,73 +1,135 @@
-<html>
-<head>
-    <title>Notifications</title>
+{% extends 'navbar.html' %}
+{% block content %}
 
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<style>
+  .notif-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; flex-wrap:wrap; gap:12px; }
+  .notif-list   { display:flex; flex-direction:column; gap:10px; }
 
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f0f4f8;
-            color: #333;
-        }
-        
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            color: #2c3e50;
-        }
-        
-        .notification {
-            border-bottom: 1px solid #eee;
-            padding: 15px 0;
-        }
-        
-        .notification:last-child {
-            border-bottom: none;
-        }
-        
-        .message {
-            font-size: 1.1rem;
-        }
-        
-        .timestamp {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>My Notifications</h1>
-        {% for notification in notifications %}
-        <div class="notification">
-            <div class="message">{{ notification.message }}</div>
-            <div class="timestamp">{{ notification.created_at }}</div>
-        </div>
-        {% empty %}
-        <p>No notifications yet.</p>
-        {% endfor %}
+  .notif-item {
+    background:#fff; border:.5px solid #e5e7eb; border-radius:16px;
+    padding:18px 22px; display:flex; align-items:flex-start; gap:14px;
+    transition:box-shadow .2s, transform .12s;
+    position:relative;
+  }
+  .notif-item:hover { box-shadow:0 6px 24px rgba(0,0,0,.07); transform:translateY(-1px); }
+  .notif-item.unread { border-left:3px solid var(--green); background:#fafffe; }
+
+  .notif-icon {
+    width:42px; height:42px; border-radius:11px;
+    background:#f0fdf4; display:flex; align-items:center; justify-content:center;
+    font-size:20px; flex-shrink:0;
+  }
+  .notif-item.unread .notif-icon { background:#dcfce7; }
+
+  .notif-body { flex:1; }
+  .notif-msg  { font-size:14px; color:#111; line-height:1.5; margin-bottom:5px; }
+  .notif-time { font-size:11.5px; color:#9ca3af; display:flex; align-items:center; gap:4px; }
+
+  .notif-dot {
+    width:8px; height:8px; border-radius:50%;
+    background:var(--green); flex-shrink:0; margin-top:6px;
+  }
+
+  .empty-state {
+    text-align:center; padding:64px 24px;
+    background:#fff; border:.5px solid #e5e7eb; border-radius:18px;
+  }
+  .empty-icon  { font-size:48px; margin-bottom:12px; }
+  .empty-state h3 { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:#111; margin-bottom:8px; }
+  .empty-state p  { font-size:13px; color:#6b7280; }
+</style>
+
+<!-- PAGE HEADER -->
+<div class="page-header reveal">
+  <div class="page-header-tag">🔔 Notifications</div>
+  <h1>Your <span>Notifications</span></h1>
+  <p>Stay informed about bin statuses, report updates, and system alerts.</p>
+</div>
+
+<!-- HEADER ROW -->
+<div class="notif-header reveal">
+  <span class="section-label" style="margin:0;">
+    {% if unread_count > 0 %}
+      {{ unread_count }} unread notification{{ unread_count|pluralize }}
+    {% else %}
+      All caught up 🎉
+    {% endif %}
+  </span>
+  {% if unread_count > 0 %}
+  <button class="btn-outline" id="markAllReadBtn" onclick="markAllRead()">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none">
+      <path d="M3 8l4 4 6-7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    Mark all as read
+  </button>
+  {% endif %}
+</div>
+
+<!-- NOTIFICATION LIST -->
+<div class="notif-list">
+{% for notif in notifications %}
+<div class="notif-item reveal {% if not notif.is_read %}unread{% endif %}" id="notif-{{ notif.id }}">
+  <div class="notif-icon">
+    {% if "bin" in notif.message|lower or "🗑" in notif.message %}🗑️
+    {% elif "report" in notif.message|lower or "📢" in notif.message %}📢
+    {% elif "pickup" in notif.message|lower %}🚛
+    {% else %}ℹ️
+    {% endif %}
+  </div>
+  <div class="notif-body">
+    <div class="notif-msg">{{ notif.message }}</div>
+    <div class="notif-time">
+      <svg width="11" height="11" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6.5" stroke="#9ca3af" stroke-width="1.4"/>
+        <path d="M8 5v3.5l2 2" stroke="#9ca3af" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      {{ notif.created_at|date:"M d, Y · g:i A" }}
     </div>
+  </div>
+  {% if not notif.is_read %}
+  <div class="notif-dot" title="Unread"></div>
+  {% endif %}
+</div>
+{% empty %}
+<div class="empty-state reveal">
+  <div class="empty-icon">🔕</div>
+  <h3>No notifications yet</h3>
+  <p>You'll receive updates here when bins need attention or your reports change status.</p>
+</div>
+{% endfor %}
+</div>
 
-    <script>
-        // Optional: Add JavaScript to mark notifications as read when clicked
-        document.querySelectorAll('.notification').forEach(function(notification) {
-            notification.addEventListener('click', function() {
-                // Send AJAX request to mark as read (not implemented here)
-                this.style.backgroundColor = '#f0f4f8'; // Example visual feedback
-            });
-        });
-    </script>
+<script>
+async function markAllRead(){
+  const btn = document.getElementById('markAllReadBtn');
+  if(btn){ btn.disabled=true; btn.textContent='Marking…'; }
 
-    
-</body>
-</html>
+  try {
+    const res = await fetch('/notifications/mark-read/', {
+      method:'POST',
+      headers:{ 'X-CSRFToken': getCookie('csrftoken') }
+    });
+    if(res.ok){
+      // visually clear all unread states
+      document.querySelectorAll('.notif-item.unread').forEach(el=>{
+        el.classList.remove('unread');
+        el.style.borderLeft = '';
+        el.style.background = '';
+        const dot = el.querySelector('.notif-dot');
+        if(dot) dot.remove();
+      });
+      const label = document.querySelector('.section-label');
+      if(label) label.textContent = 'All caught up 🎉';
+      if(btn) btn.remove();
+    }
+  } catch(err){ console.error(err); }
+}
+
+function getCookie(name){
+  let value = `; ${document.cookie}`;
+  let parts = value.split(`; ${name}=`);
+  if(parts.length===2) return parts.pop().split(';').shift();
+}
+</script>
+
+{% endblock %}

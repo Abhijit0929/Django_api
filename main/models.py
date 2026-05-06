@@ -74,8 +74,16 @@ class UserProfile(models.Model):
     
 
 class Feedback(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    message = models.TextField()
+    CATEGORY_CHOICES = [
+        ("bug", "Bug Report"),
+        ("feature", "Feature Request"),
+        ("improvement", "Improvement Suggestion"),
+        ("general", "General Feedback"),
+    ]
+    user     = models.ForeignKey(User, on_delete=models.CASCADE)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default="general")
+    rating   = models.IntegerField(null=True, blank=True)
+    message  = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

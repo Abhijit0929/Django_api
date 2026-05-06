@@ -2,35 +2,48 @@
 {% block content %}
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
-  .feedback-wrap{max-width:680px;margin:0 auto;}
-  .feedback-wrap .page-header{margin-bottom:18px;border-radius:20px;padding:32px 36px;}
-  .feedback-card{background:#fff;border:.5px solid #e5e7eb;border-radius:20px;padding:36px;}
-  .form-group{margin-bottom:20px;}
-  .rating-row{display:flex;gap:8px;margin-top:8px;}
-  .rating-input{display:none;}
-  .rating-label{
-    width:44px;height:44px;border-radius:10px;border:1.5px solid #e5e7eb;
-    background:#f9fafb;display:flex;align-items:center;justify-content:center;
-    font-size:15px;font-weight:700;color:#9ca3af;cursor:pointer;
+  .feedback-wrap { max-width:680px; margin:0 auto; }
+  .feedback-wrap .page-header { margin-bottom:18px; border-radius:20px; padding:32px 36px; }
+  .feedback-card { background:#fff; border:.5px solid #e5e7eb; border-radius:20px; padding:36px; }
+  .form-group { margin-bottom:20px; }
+  .rating-row { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
+  .rating-input { display:none; }
+  .rating-label {
+    width:44px; height:44px; border-radius:10px; border:1.5px solid #e5e7eb;
+    background:#f9fafb; display:flex; align-items:center; justify-content:center;
+    font-size:15px; font-weight:700; color:#9ca3af; cursor:pointer;
     transition:all .15s;
   }
-  .rating-input:checked + .rating-label{background:#fef3c7;border-color:#fbbf24;color:#d97706;}
-  .rating-label:hover{background:#fef9ee;border-color:#fbbf24;color:#f59e0b;}
-  .submit-btn{
-    width:100%;padding:13px;background:#22c55e;color:#052e0f;
-    font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;
-    border:none;border-radius:11px;cursor:pointer;
+  .rating-input:checked + .rating-label { background:#fef3c7; border-color:#fbbf24; color:#d97706; }
+  .rating-label:hover { background:#fef9ee; border-color:#fbbf24; color:#f59e0b; }
+
+  .category-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
+  .category-input { display:none; }
+  .category-label {
+    padding:10px 14px; border-radius:10px; border:1.5px solid #e5e7eb;
+    background:#f9fafb; font-size:13px; font-weight:500; color:#6b7280;
+    cursor:pointer; transition:all .15s; text-align:center;
+  }
+  .category-input:checked + .category-label { background:#f0fdf4; border-color:var(--green); color:var(--green-dark); }
+  .category-label:hover { background:#f0fdf4; border-color:#a7f3d0; }
+
+  .submit-btn {
+    width:100%; padding:13px; background:var(--green); color:#052e0f;
+    font-family:'DM Sans',sans-serif; font-size:15px; font-weight:600;
+    border:none; border-radius:11px; cursor:pointer;
     transition:background .2s,transform .15s;
-    display:flex;align-items:center;justify-content:center;gap:8px;
+    display:flex; align-items:center; justify-content:center; gap:8px;
   }
-  .submit-btn:hover{background:#16a34a;transform:translateY(-1px);}
-  .success-toast{
-    display:none;background:#d1fae5;border:.5px solid #a7f3d0;color:#065f46;
-    padding:14px 18px;border-radius:12px;margin-bottom:20px;font-size:14px;
-    align-items:center;gap:10px;
+  .submit-btn:hover { background:#16a34a; transform:translateY(-1px); }
+  .submit-btn:disabled { opacity:.6; cursor:not-allowed; transform:none; }
+
+  .success-card {
+    background:#f0fdf4; border:.5px solid #a7f3d0;
+    border-radius:16px; padding:32px; text-align:center;
   }
-  .success-toast.show{display:flex;}
+  .success-card .icon { font-size:48px; margin-bottom:12px; }
+  .success-card h3 { font-family:'Syne',sans-serif; font-size:22px; font-weight:800; color:#065f46; margin-bottom:8px; }
+  .success-card p { font-size:14px; color:#047857; margin-bottom:20px; }
 </style>
 
 <div class="feedback-wrap">
@@ -41,72 +54,71 @@
     <p>Help us improve the Smart Waste Management system — your thoughts shape the platform.</p>
   </div>
 
-  <div class="success-toast" id="successToast">
-    ✅ <span>Thank you! Your feedback has been submitted successfully.</span>
+  {% if success %}
+  <div class="success-card reveal">
+    <div class="icon">🎉</div>
+    <h3>Feedback Received!</h3>
+    <p>Thank you for helping us improve. We'll review your message shortly.</p>
+    <a href="/" class="btn-primary">Back to Home</a>
   </div>
+  {% else %}
+
+  {% if error %}
+  <div class="alert alert-red reveal">⚠️ {{ error }}</div>
+  {% endif %}
 
   <div class="feedback-card reveal">
-    <form id="feedbackForm" method="POST">
+    <form method="POST" action="/feedback/" id="feedbackForm">
       {% csrf_token %}
 
       <div class="form-group">
-        <label class="form-label">Full Name <span style="color:#ef4444;">*</span></label>
-        <input type="text" name="name" id="name" required placeholder="Enter your name" class="form-input">
-      </div>
+        <label class="form-label">Feedback Category <span style="color:#ef4444">*</span></label>
+        <div class="category-grid">
+          <input type="radio" id="cat_bug"  name="category" value="bug"  class="category-input" required>
+          <label for="cat_bug"  class="category-label">🐛 Bug Report</label>
 
-      <div class="form-group">
-        <label class="form-label">Email Address <span style="color:#ef4444;">*</span></label>
-        <input type="email" name="email" id="email" required placeholder="Enter your email" class="form-input">
-      </div>
+          <input type="radio" id="cat_feat" name="category" value="feature" class="category-input">
+          <label for="cat_feat" class="category-label">✨ Feature Request</label>
 
-      <div class="form-group">
-        <label class="form-label">Feedback Category <span style="color:#ef4444;">*</span></label>
-        <select name="category" id="category" required class="form-input">
-          <option value="">Select a category</option>
-          <option value="bug">🐛 Bug Report</option>
-          <option value="feature">✨ Feature Request</option>
-          <option value="improvement">📈 Improvement Suggestion</option>
-          <option value="general">💬 General Feedback</option>
-        </select>
-      </div>
+          <input type="radio" id="cat_imp"  name="category" value="improvement" class="category-input">
+          <label for="cat_imp"  class="category-label">📈 Improvement</label>
 
-      <div class="form-group">
-        <label class="form-label">Overall Rating <span style="color:#ef4444;">*</span></label>
-        <div class="rating-row">
-          <input type="radio" id="r1" name="rating" value="1" class="rating-input" required>
-          <label for="r1" class="rating-label">1</label>
-          <input type="radio" id="r2" name="rating" value="2" class="rating-input">
-          <label for="r2" class="rating-label">2</label>
-          <input type="radio" id="r3" name="rating" value="3" class="rating-input">
-          <label for="r3" class="rating-label">3</label>
-          <input type="radio" id="r4" name="rating" value="4" class="rating-input">
-          <label for="r4" class="rating-label">4</label>
-          <input type="radio" id="r5" name="rating" value="5" class="rating-input">
-          <label for="r5" class="rating-label">5</label>
+          <input type="radio" id="cat_gen"  name="category" value="general" class="category-input">
+          <label for="cat_gen"  class="category-label">💬 General</label>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Your Feedback <span style="color:#ef4444;">*</span></label>
-        <textarea name="message" id="message" required placeholder="Share your thoughts…" class="form-input"></textarea>
+        <label class="form-label">Overall Rating</label>
+        <div class="rating-row">
+          {% for i in "12345" %}
+          <input type="radio" id="r{{ i }}" name="rating" value="{{ i }}" class="rating-input">
+          <label for="r{{ i }}" class="rating-label">{{ i }}</label>
+          {% endfor %}
+        </div>
       </div>
 
-      <button type="submit" class="submit-btn">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div class="form-group">
+        <label class="form-label" for="fb_message">Your Feedback <span style="color:#ef4444">*</span></label>
+        <textarea name="message" id="fb_message" required placeholder="Share your thoughts, ideas, or issues…" class="form-input"></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn" id="fbSubmitBtn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 8h12M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         Submit Feedback
       </button>
     </form>
   </div>
+  {% endif %}
 </div>
 
 <script>
-document.getElementById('feedbackForm').addEventListener('submit', function(e){
-  // If Django handles POST, remove e.preventDefault()
-  e.preventDefault();
-  const toast = document.getElementById('successToast');
-  toast.classList.add('show');
-  this.reset();
-  setTimeout(()=>toast.classList.remove('show'), 5000);
+document.getElementById('feedbackForm')?.addEventListener('submit', function(){
+  const btn = document.getElementById('fbSubmitBtn');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
 });
 </script>
 

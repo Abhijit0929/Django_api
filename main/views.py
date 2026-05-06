@@ -1,137 +1,171 @@
-from django.shortcuts import render
-from django.http import JsonResponse
+from django.shortcuts import render, redirect
+from django.http import JsonResponse, HttpResponse
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib import messages
 import json
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .models import SmartBin, Pickup, WasteReport
+from .models import SmartBin, Pickup, WasteReport, Feedback, Notification, UserProfile
 from .serializers import SmartBinSerializer, PickupSerializer, WasteReportSerializer
 
-
-
-# Page view (HTML)
 from rest_framework import viewsets
-from .models import SmartBin
-from .serializers import SmartBinSerializer
 
 
+# ════════════════════════════════════════════════
+#  AUTH VIEWS
+# ════════════════════════════════════════════════
+
+def register_view(request):
+    if request.user.is_authenticated:
+        return redirect("/")
+
+    if request.method == "POST":
+        username    = request.POST.get("username", "").strip()
+        email       = request.POST.get("email", "").strip()
+        password1   = request.POST.get("password1", "")
+        password2   = request.POST.get("password2", "")
+
+        error = None
+        if not username or not password1:
+            error = "Username and password are required."
+        elif password1 != password2:
+            error = "Passwords do not match."
+        elif User.objects.filter(username=username).exists():
+            error = "That username is already taken."
+        elif len(password1) < 6:
+            error = "Password must be at least 6 characters."
+
+        if error:
+            return render(request, "register.html", {"error": error})
+
+        user = User.objects.create_user(username=username, email=email, password=password1)
+        UserProfile.objects.get_or_create(user=user)
+        login(request, user)
+        messages.success(request, f"Welcome, {username}! Your account has been created.")
+        return redirect("/")
+
+    return render(request, "register.html")
+
+
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect("/")
+
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            next_url = request.GET.get("next", "/")
+            return redirect(next_url)
+        else:
+            return render(request, "login.html", {"error": "Invalid username or password."})
+
+    return render(request, "login.html")
+
+
+def logout_view(request):
+    logout(request)
+    return redirect("/login/")
+
+
+# ════════════════════════════════════════════════
+#  API VIEWS
+# ════════════════════════════════════════════════
 
 @api_view(['PATCH'])
 def update_pickup_status(request, id):
-
     pickup = Pickup.objects.get(id=id)
-
-    serializer = PickupSerializer(
-        pickup,
-        data=request.data,
-        partial=True
-    )
-
+    serializer = PickupSerializer(pickup, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
-
     return Response(serializer.data)
+
 
 @api_view(['GET', 'POST'])
 def bin_list_create(request):
-
     if request.method == "GET":
         bins = SmartBin.objects.all()
         serializer = SmartBinSerializer(bins, many=True)
         return Response(serializer.data)
-
     if request.method == "POST":
         serializer = SmartBinSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
-        
+
+
 @api_view(['PATCH'])
 def bin_update(request, id):
-
     bin = SmartBin.objects.get(id=id)
-
-    serializer = SmartBinSerializer(
-        bin,
-        data=request.data,
-        partial=True
-    )
-
+    serializer = SmartBinSerializer(bin, data=request.data, partial=True)
     if serializer.is_valid():
         serializer.save()
-
     return Response(serializer.data)
 
-@api_view(['GET','POST'])
-def pickup_list_create(request):
 
+@api_view(['GET', 'POST'])
+def pickup_list_create(request):
     if request.method == "GET":
         pickups = Pickup.objects.all()
         serializer = PickupSerializer(pickups, many=True)
         return Response(serializer.data)
-
     if request.method == "POST":
         serializer = PickupSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-
         return Response(serializer.data)
-    
-@api_view(['GET','POST'])
-def report_list_create(request):
 
+
+@api_view(['GET', 'POST'])
+def report_list_create(request):
     if request.method == "GET":
         reports = WasteReport.objects.all()
         serializer = WasteReportSerializer(reports, many=True)
         return Response(serializer.data)
-
     if request.method == "POST":
         serializer = WasteReportSerializer(data=request.data)
-
         if serializer.is_valid():
             serializer.save()
-
         return Response(serializer.data)
+
 
 class SmartBinViewSet(viewsets.ModelViewSet):
     queryset = SmartBin.objects.all()
     serializer_class = SmartBinSerializer
 
 
-from django.shortcuts import render, redirect
-from .models import SmartBin, WasteReport
-
+# ════════════════════════════════════════════════
+#  PAGE VIEWS
+# ════════════════════════════════════════════════
 
 def home(request):
-
-    return render(request,"home.html")
+    return render(request, "home.html")
 
 
 def bins_view(request):
-
     bins = SmartBin.objects.all()
-
-    return render(request,"bins.html",{"bins":bins})
+    return render(request, "bins.html", {"bins": bins})
 
 
 def report_waste(request):
-
     if not request.user.is_authenticated:
-        return redirect("/")
+        return redirect("/login/?next=/report/")
 
     if request.method == "POST":
-
         location    = request.POST.get("location", "").strip()
         description = request.POST.get("description", "").strip()
         image       = request.FILES.get("image")
 
-        # Convert empty strings to None so FloatField doesn't crash
         raw_lat = request.POST.get("latitude", "").strip()
         raw_lon = request.POST.get("longitude", "").strip()
         latitude  = float(raw_lat) if raw_lat else None
         longitude = float(raw_lon) if raw_lon else None
 
-        # Basic validation
         if not location or not description:
             return render(request, "report.html", {
                 "error": "Please fill in the location and description before submitting."
@@ -147,16 +181,23 @@ def report_waste(request):
             image=image,
         )
 
+        # Notify admins about new report
+        admins = User.objects.filter(is_staff=True)
+        for admin in admins:
+            Notification.objects.create(
+                user=admin,
+                message=f"📢 New garbage report filed at '{location}' by {request.user.username}."
+            )
+
         return redirect("/reports/")
 
     return render(request, "report.html")
 
+
 def reports_view(request):
-
     if not request.user.is_authenticated:
-        return redirect("/")
+        return redirect("/login/?next=/reports/")
 
-    # Staff/admin see all reports; regular users see only their own
     if request.user.is_staff:
         reports = WasteReport.objects.all().order_by("-id")
     else:
@@ -165,24 +206,14 @@ def reports_view(request):
     return render(request, "reports.html", {"reports": reports})
 
 
-
-# Pickups page view
-
-from django.http import HttpResponse
-
 def pickups_view(request):
-    # 🔐 Only admin/staff can access
     if not request.user.is_staff:
         return HttpResponse(status=403)
-
     pickups = Pickup.objects.all()
     return render(request, "admin_pickups.html", {"pickups": pickups})
 
 
-
 def update_pickup(request, id):
-    from django.shortcuts import redirect
-
     if not request.user.is_staff:
         return redirect("/dashboard/")
 
@@ -190,19 +221,18 @@ def update_pickup(request, id):
 
     if pickup.status == "pending":
         pickup.status = "in_progress"
-
     elif pickup.status == "in_progress":
         pickup.status = "completed"
 
     pickup.save()
-
     return redirect("/admin-dashboard/pickups/")
+
 
 def city_dashboard(request):
     if not request.user.is_authenticated:
-        return redirect("/")
+        return redirect("/login/?next=/dashboard/")
 
-    bins = SmartBin.objects.all()
+    bins    = SmartBin.objects.all()
     reports = WasteReport.objects.all()
     pickups = Pickup.objects.all()
 
@@ -213,82 +243,117 @@ def city_dashboard(request):
     }
 
     return render(request, "dashboard.html", context)
-    
-    
-from .models import SmartBin, Pickup, WasteReport
-from django.contrib.auth.models import User
-from django.shortcuts import render
 
 
 def admin_dashboard(request):
-    from django.shortcuts import redirect
-
     if not request.user.is_staff:
         return redirect("/dashboard/")
 
-    total_bins = SmartBin.objects.count()
-    full_bins = SmartBin.objects.filter(status="full").count()
+    from django.db.models import Avg
+
+    total_bins      = SmartBin.objects.count()
+    full_bins       = SmartBin.objects.filter(status="full").count()
     pending_pickups = Pickup.objects.filter(status="pending").count()
-    reports = WasteReport.objects.count()
-    workers = User.objects.count()
+    reports         = WasteReport.objects.count()
+    workers         = User.objects.count()
+    avg_fill        = SmartBin.objects.aggregate(avg=Avg("fill_level"))["avg"] or 0
 
     context = {
-        "total_bins": total_bins,
-        "full_bins": full_bins,
+        "total_bins":      total_bins,
+        "full_bins":       full_bins,
         "pending_pickups": pending_pickups,
-        "reports": reports,
-        "workers": workers
+        "reports":         reports,
+        "workers":         workers,
+        "avg_fill_level":  round(avg_fill),
     }
 
-    return render(request,"admin_dashboard.html",context)
+    return render(request, "admin_dashboard.html", context)
 
-
-from django.shortcuts import render
-from .models import SmartBin
 
 def admin_bins(request):
-
     bins = SmartBin.objects.all()
-
-    return render(request,"admin_bins.html",{"bins":bins})
+    return render(request, "admin_bins.html", {"bins": bins})
 
 
 def admin_reports(request):
-
     reports = WasteReport.objects.all()
+    return render(request, "admin_reports.html", {"reports": reports})
 
-    return render(request,"admin_reports.html",{"reports":reports})
 
 def feedback_view(request):
-    return render(request,"feedback.html")
+    if not request.user.is_authenticated:
+        return redirect("/login/?next=/feedback/")
 
+    if request.method == "POST":
+        message  = request.POST.get("message", "").strip()
+        category = request.POST.get("category", "general")
+        rating_raw = request.POST.get("rating", "")
+        rating   = int(rating_raw) if rating_raw.isdigit() else None
+
+        if not message:
+            return render(request, "feedback.html", {"error": "Please write a message before submitting."})
+
+        Feedback.objects.create(
+            user=request.user,
+            message=message,
+            category=category,
+            rating=rating,
+        )
+        return render(request, "feedback.html", {"success": True})
+
+    return render(request, "feedback.html")
 
 
 def profile_view(request):
-    return render(request,"profile.html")
+    if not request.user.is_authenticated:
+        return redirect("/login/?next=/profile/")
+
+    total_reports    = WasteReport.objects.filter(user=request.user).count()
+    open_reports     = WasteReport.objects.filter(user=request.user, status="open").count()
+    resolved_reports = WasteReport.objects.filter(user=request.user, status="resolved").count()
+    unread_notifs    = Notification.objects.filter(user=request.user, is_read=False).count()
+
+    context = {
+        "total_reports":    total_reports,
+        "open_reports":     open_reports,
+        "resolved_reports": resolved_reports,
+        "unread_notifs":    unread_notifs,
+    }
+
+    return render(request, "profile.html", context)
+
 
 def admin_feedback(request):
-    from .models import Feedback
+    feedbacks = Feedback.objects.all().order_by("-created_at")
+    return render(request, "admin_feedback.html", {"feedbacks": feedbacks})
 
-    feedbacks = Feedback.objects.all()
-
-    return render(request,"admin_feedback.html",{"feedbacks":feedbacks})
 
 def admin_notifications(request):
-    from .models import Notification
-
     notifications = Notification.objects.all().order_by("-created_at")
-
-    return render(request,"admin_notifications.html",{"notifications":notifications})
+    return render(request, "admin_notifications.html", {"notifications": notifications})
 
 
 def notifications_view(request):
-    from .models import Notification
+    if not request.user.is_authenticated:
+        return redirect("/login/?next=/notifications/")
 
     notifications = Notification.objects.filter(user=request.user).order_by("-created_at")
+    unread_count  = notifications.filter(is_read=False).count()
 
-    return render(request,"notifications.html",{"notifications":notifications})
+    return render(request, "notifications.html", {
+        "notifications": notifications,
+        "unread_count":  unread_count,
+    })
 
 
+def mark_notifications_read(request):
+    """Mark all of this user's notifications as read (POST)."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"error": "not authenticated"}, status=401)
+
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({"status": "ok"})
 
 
+# ── Context processor helper (unread count in navbar) ──
+# Used via template tag instead; see navbar.html approach
