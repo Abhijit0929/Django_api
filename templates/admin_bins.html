@@ -48,7 +48,7 @@
       <td>📍 {{ bin.location }}</td>
       <td style="min-width:160px;">
         <div class="fill-bar-wrap">
-          <div class="fill-bar {% if bin.fill_level < 50 %}green{% elif bin.fill_level < 80 %}amber{% else %}red{% endif %}" style="width:{{ bin.fill_level }}%;"></div>
+       <div class="fill-bar {% if bin.fill_level < 50 %}green{% elif bin.fill_level < 80 %}amber{% else %}red{% endif %}" style="width: {{ bin.fill_level }}%;"></div>
         </div>
         <span style="font-size:12px;color:#6b7280;margin-top:4px;display:block;">{{ bin.fill_level }}%</span>
       </td>
