@@ -25,14 +25,15 @@ urlpatterns = [
     path("api/pickups/<int:id>/", views.update_pickup_status),
     path("api/reports/",          views.report_list_create),
 
+    # ── CITY ──
+    path("dashboard/",                         views.city_dashboard,       name="dashboard"),
+
     # ── ADMIN UI ──
-    path("pickups/",                    views.pickups_view),
-    path("pickup/update/<int:id>/",     views.update_pickup),
-    path("dashboard/",                  views.city_dashboard,   name="dashboard"),
-    path("admin-dashboard/",            views.admin_dashboard,  name="admin_dashboard"),
-    path("admin-dashboard/pickups/",    views.pickups_view,     name="admin_pickups"),
-    path("admin-dashboard/bins/",       views.admin_bins,       name="admin_bins"),
-    path("admin-dashboard/reports/",    views.admin_reports,    name="admin_reports"),
-    path("admin-dashboard/feedback/",   views.admin_feedback,   name="admin_feedback"),
-    path("admin-dashboard/notifications/", views.admin_notifications, name="admin_notifications"),
+    path("admin-dashboard/",                   views.admin_dashboard,      name="admin_dashboard"),
+    path("admin-dashboard/bins/",              views.admin_bins,           name="admin_bins"),
+    path("admin-dashboard/pickups/",           views.pickups_view,         name="admin_pickups"),
+    path("admin-dashboard/pickup/update/<int:id>/", views.update_pickup,   name="update_pickup"),
+    path("admin-dashboard/reports/",           views.admin_reports,        name="admin_reports"),
+    path("admin-dashboard/feedback/",          views.admin_feedback,       name="admin_feedback"),
+    path("admin-dashboard/notifications/",     views.admin_notifications,  name="admin_notifications"),
 ]

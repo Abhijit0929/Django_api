@@ -271,11 +271,15 @@ def admin_dashboard(request):
 
 
 def admin_bins(request):
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
     bins = SmartBin.objects.all()
     return render(request, "admin_bins.html", {"bins": bins})
 
 
 def admin_reports(request):
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
     reports = WasteReport.objects.all()
     return render(request, "admin_reports.html", {"reports": reports})
 
@@ -324,11 +328,15 @@ def profile_view(request):
 
 
 def admin_feedback(request):
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
     feedbacks = Feedback.objects.all().order_by("-created_at")
     return render(request, "admin_feedback.html", {"feedbacks": feedbacks})
 
 
 def admin_notifications(request):
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
     notifications = Notification.objects.all().order_by("-created_at")
     return render(request, "admin_notifications.html", {"notifications": notifications})
 

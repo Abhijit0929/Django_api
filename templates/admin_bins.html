@@ -18,15 +18,15 @@
 
 <div class="admin-tabs reveal">
   <a href="/admin-dashboard/" class="admin-tab">Dashboard</a>
-  <a href="/admin/bins/" class="admin-tab active">Bins</a>
-  <a href="/admin/pickups/" class="admin-tab">Pickups</a>
-  <a href="/admin/reports/" class="admin-tab">Reports</a>
+  <a href="/admin-dashboard/bins/" class="admin-tab active">Bins</a>
+  <a href="/admin-dashboard/pickups/" class="admin-tab">Pickups</a>
+  <a href="/admin-dashboard/reports/" class="admin-tab">Reports</a>
   <a href="/dashboard/" class="admin-tab">City Map</a>
 </div>
 
 <div class="top-bar reveal">
   <span class="section-label" style="margin:0;">{{ bins|length }} bin{{ bins|length|pluralize }} registered</span>
-  <a href="/admin/add-bin/" class="btn-primary">
+  <a href="/admin-dashboard/add-bin/" class="btn-primary">
     <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     Add New Bin
   </a>
@@ -61,8 +61,8 @@
       </td>
       <td>
         <div style="display:flex;gap:8px;">
-          <a href="/admin/edit-bin/{{ bin.id }}/" class="btn-outline" style="padding:6px 13px;font-size:12px;">Edit</a>
-          <a href="/admin/delete-bin/{{ bin.id }}/" class="btn-danger">Delete</a>
+          <a href="/admin-dashboard/edit-bin/{{ bin.id }}/" class="btn-outline" style="padding:6px 13px;font-size:12px;">Edit</a>
+          <a href="/admin-dashboard/delete-bin/{{ bin.id }}/" class="btn-danger">Delete</a>
         </div>
       </td>
     </tr>

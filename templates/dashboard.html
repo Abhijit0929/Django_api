@@ -1,0 +1,503 @@
+{% extends 'navbar.html' %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+
+  /* ── Leaflet overrides ── */
+  .leaflet-container { font-family: 'DM Sans', sans-serif !important; }
+  .leaflet-popup-content-wrapper {
+    border-radius: 14px !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,.15) !important;
+    border: .5px solid #e5e7eb;
+    padding: 0 !important;
+    overflow: hidden;
+  }
+  .leaflet-popup-tip-container { margin-top: -1px; }
+  .leaflet-popup-content { margin: 0 !important; width: 220px !important; }
+
+  /* ── Map wrapper ── */
+  #map {
+    width: 100%; height: 480px;
+    border-radius: 20px;
+    overflow: hidden;
+    border: .5px solid var(--card-border);
+    box-shadow: 0 4px 24px rgba(0,0,0,.07);
+  }
+
+  /* ── Legend ── */
+  .map-legend {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    margin-top: 14px;
+  }
+  .legend-item {
+    display: flex; align-items: center; gap: 7px;
+    background: #fff; border: .5px solid var(--card-border);
+    border-radius: 100px; padding: 5px 13px;
+    font-size: 12px; font-weight: 500; color: #374151;
+  }
+  .legend-dot {
+    width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0;
+  }
+  .legend-dot.green  { background: #22c55e; }
+  .legend-dot.amber  { background: #f59e0b; }
+  .legend-dot.red    { background: #ef4444; }
+  .legend-dot.report { background: #6366f1; }
+
+  /* ── Side panel ── */
+  .dashboard-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 16px;
+    align-items: start;
+    margin-top: 20px;
+  }
+
+  .side-panel {
+    display: flex; flex-direction: column; gap: 14px;
+  }
+
+  .panel-card {
+    background: #fff; border: .5px solid var(--card-border);
+    border-radius: 18px; padding: 18px;
+  }
+  .panel-card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px; font-weight: 700; color: #111;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 6px;
+  }
+
+  /* bin list in side panel */
+  .bin-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; }
+  .bin-list::-webkit-scrollbar { width: 4px; }
+  .bin-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
+  .bin-list-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 11px; border-radius: 10px;
+    border: .5px solid #f3f4f6;
+    cursor: pointer; transition: background .15s, border-color .15s;
+  }
+  .bin-list-item:hover { background: #f0fdf4; border-color: #bbf7d0; }
+  .bin-status-dot {
+    width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  }
+  .bin-status-dot.ok    { background: #22c55e; }
+  .bin-status-dot.warn  { background: #f59e0b; }
+  .bin-status-dot.full  { background: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,.2); }
+  .bin-list-info { flex: 1; min-width: 0; }
+  .bin-list-name { font-size: 12px; font-weight: 500; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bin-list-fill { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+
+  /* fill mini bar */
+  .mini-fill-wrap { background: #f3f4f6; border-radius: 100px; height: 4px; width: 50px; flex-shrink: 0; overflow: hidden; }
+  .mini-fill-bar  { height: 100%; border-radius: 100px; }
+  .mini-fill-bar.green { background: #22c55e; }
+  .mini-fill-bar.amber { background: #f59e0b; }
+  .mini-fill-bar.red   { background: #ef4444; }
+
+  /* report list */
+  .report-list { display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; }
+  .report-item {
+    padding: 9px 11px; border-radius: 10px;
+    border: .5px solid #f3f4f6; font-size: 12px; color: #374151;
+    display: flex; gap: 8px; align-items: flex-start;
+  }
+  .report-item-loc { font-weight: 500; color: #111; }
+  .report-item-desc { color: #9ca3af; font-size: 11px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* popup card styles */
+  .popup-header {
+    padding: 13px 15px 10px;
+    border-bottom: .5px solid #f3f4f6;
+  }
+  .popup-title {
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: #111;
+    margin-bottom: 4px;
+  }
+  .popup-body { padding: 11px 15px 14px; }
+  .popup-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; color: #6b7280; }
+  .popup-row:last-child { margin-bottom: 0; }
+  .popup-val { font-weight: 600; color: #111; }
+  .popup-fill-wrap { background: #f3f4f6; border-radius: 100px; height: 7px; overflow: hidden; margin: 6px 0 10px; }
+  .popup-fill-bar { height: 100%; border-radius: 100px; }
+
+  /* filter strip */
+  .filter-strip {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .filter-chip {
+    padding: 6px 14px; border-radius: 100px; font-size: 12px; font-weight: 500;
+    border: .5px solid var(--card-border); background: #fff; color: #6b7280;
+    cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+  }
+  .filter-chip:hover { background: #f0fdf4; border-color: #bbf7d0; color: #065f46; }
+  .filter-chip.active { background: #0a2e1a; color: #4ade80; border-color: #0a2e1a; }
+
+  @media(max-width: 900px) {
+    .dashboard-layout { grid-template-columns: 1fr; }
+    #map { height: 380px; }
+  }
+</style>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<!-- PAGE HEADER -->
+<div class="page-header reveal">
+  <div class="page-header-tag">🗺️ Live City Map</div>
+  <h1>Smart Bin <span>Dashboard</span></h1>
+  <p>Real-time location, fill levels, and status of every smart bin across the city network.</p>
+</div>
+
+<!-- STAT STRIP -->
+<div class="stat-grid reveal">
+  <div class="stat-item">
+    <div class="stat-item-num">{{ bins|length }}</div>
+    <div class="stat-item-label">Total Bins</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num" id="stat-ok">—</div>
+    <div class="stat-item-label">Operational</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num red" id="stat-full">—</div>
+    <div class="stat-item-label">Bins Full</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num amber" id="stat-avg">—</div>
+    <div class="stat-item-label">Avg Fill Level</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num" style="color:#6366f1;">{{ reports|length }}</div>
+    <div class="stat-item-label">Waste Reports</div>
+  </div>
+</div>
+
+<!-- FILTER CHIPS -->
+<div class="filter-strip reveal">
+  <button class="filter-chip active" onclick="applyFilter('all', this)" id="chip-all">🗺️ All Bins</button>
+  <button class="filter-chip" onclick="applyFilter('ok', this)">🟢 Operational</button>
+  <button class="filter-chip" onclick="applyFilter('warn', this)">🟡 Nearly Full</button>
+  <button class="filter-chip" onclick="applyFilter('full', this)">🔴 Full</button>
+  <button class="filter-chip" onclick="applyFilter('reports', this)">🟣 Reports</button>
+</div>
+
+<!-- MAIN LAYOUT: MAP + SIDE PANEL -->
+<div class="dashboard-layout reveal">
+
+  <!-- MAP -->
+  <div>
+    <div id="map"></div>
+    <div class="map-legend">
+      <div class="legend-item"><div class="legend-dot green"></div> Operational (&lt;80%)</div>
+      <div class="legend-item"><div class="legend-dot amber"></div> Nearly Full (≥80%)</div>
+      <div class="legend-item"><div class="legend-dot red"></div> Full / Needs Pickup</div>
+      <div class="legend-item"><div class="legend-dot report"></div> Waste Report</div>
+    </div>
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+
+    <!-- Bin List -->
+    <div class="panel-card">
+      <div class="panel-card-title">🗑️ All Bins</div>
+      <div class="bin-list" id="bin-list">
+        {% for bin in bins %}
+        <div class="bin-list-item"
+             data-lat="{{ bin.latitude }}"
+             data-lng="{{ bin.longitude }}"
+             data-fill="{{ bin.fill_level }}"
+             data-status="{{ bin.status }}"
+             onclick="flyToBin({{ bin.latitude }}, {{ bin.longitude }}, {{ bin.id }})">
+          <div class="bin-status-dot
+            {% if bin.status == 'full' %}full
+            {% elif bin.fill_level >= 80 %}warn
+            {% else %}ok{% endif %}">
+          </div>
+          <div class="bin-list-info">
+            <div class="bin-list-name">{{ bin.location }}</div>
+            <div class="bin-list-fill">{{ bin.fill_level }}% full</div>
+          </div>
+          <div class="mini-fill-wrap">
+            <div class="mini-fill-bar
+              {% if bin.fill_level < 50 %}green
+              {% elif bin.fill_level < 80 %}amber
+              {% else %}red{% endif %}"
+              style="width:{{ bin.fill_level }}%;">
+            </div>
+          </div>
+        </div>
+        {% empty %}
+        <p style="font-size:13px;color:#9ca3af;text-align:center;padding:20px 0;">No bins registered yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Reports List -->
+    {% if reports %}
+    <div class="panel-card">
+      <div class="panel-card-title">📢 Recent Reports</div>
+      <div class="report-list">
+        {% for report in reports %}
+        <div class="report-item"
+          {% if report.latitude and report.longitude %}
+          style="cursor:pointer;"
+          onclick="flyToReport({{ report.latitude }}, {{ report.longitude }})"
+          {% endif %}>
+          <span>🟣</span>
+          <div style="min-width:0;">
+            <div class="report-item-loc">{{ report.location }}</div>
+            <div class="report-item-desc">{{ report.description }}</div>
+          </div>
+          <span class="badge {% if report.status == 'open' %}badge-red{% else %}badge-green{% endif %}"
+                style="flex-shrink:0;font-size:10px;">
+            {{ report.status|capfirst }}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<!-- Pass Django data to JS -->
+<script>
+  const BIN_DATA = [
+    {% for bin in bins %}
+    {
+      id: {{ bin.id }},
+      location: "{{ bin.location|escapejs }}",
+      lat: {{ bin.latitude }},
+      lng: {{ bin.longitude }},
+      fill: {{ bin.fill_level }},
+      status: "{{ bin.status }}",
+      lastUpdated: "{{ bin.last_updated|date:'d M Y, H:i' }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+
+  const REPORT_DATA = [
+    {% for report in reports %}
+    {% if report.latitude and report.longitude %}
+    {
+      location: "{{ report.location|escapejs }}",
+      description: "{{ report.description|escapejs|truncatechars:60 }}",
+      status: "{{ report.status }}",
+      lat: {{ report.latitude }},
+      lng: {{ report.longitude }}
+    }{% if not forloop.last %},{% endif %}
+    {% endif %}
+    {% endfor %}
+  ];
+</script>
+
+<script>
+// ── Compute stats ──
+(function(){
+  let fullCount = 0, totalFill = 0;
+  BIN_DATA.forEach(b => {
+    if(b.status === 'full' || b.fill >= 100) fullCount++;
+    totalFill += b.fill;
+  });
+  const avg = BIN_DATA.length ? Math.round(totalFill / BIN_DATA.length) : 0;
+  const okCount = BIN_DATA.length - fullCount;
+
+  document.getElementById('stat-full').textContent = fullCount;
+  document.getElementById('stat-avg').textContent  = avg + '%';
+  document.getElementById('stat-ok').textContent   = okCount;
+})();
+
+// ── Decide map center ──
+let mapCenter = [20.5937, 78.9629]; // India default
+let mapZoom   = 5;
+if(BIN_DATA.length > 0){
+  mapCenter = [BIN_DATA[0].lat, BIN_DATA[0].lng];
+  mapZoom   = 14;
+}
+
+// ── Init map ──
+const map = L.map('map', {
+  center: mapCenter,
+  zoom: mapZoom,
+  zoomControl: true,
+  attributionControl: true
+});
+
+// Tile layer — clean light theme
+L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+  subdomains: 'abcd',
+  maxZoom: 20
+}).addTo(map);
+
+// ── Custom marker factory ──
+function makeIcon(color, pulse){
+  const size = 28;
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 28 28">
+      ${pulse ? `<circle cx="14" cy="14" r="13" fill="${color}" opacity="0.2">
+        <animate attributeName="r" values="10;14;10" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.3;0.05;0.3" dur="2s" repeatCount="indefinite"/>
+      </circle>` : ''}
+      <circle cx="14" cy="14" r="10" fill="${color}" stroke="#fff" stroke-width="2.5"/>
+      <text x="14" y="19" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">🗑</text>
+    </svg>`;
+  return L.divIcon({
+    html: svg,
+    className: '',
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    popupAnchor: [0, -size/2]
+  });
+}
+
+function makeReportIcon(){
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 26 26">
+      <circle cx="13" cy="13" r="10" fill="#6366f1" stroke="#fff" stroke-width="2.5"/>
+      <text x="13" y="18" text-anchor="middle" font-size="11" fill="#fff" font-family="sans-serif">⚠</text>
+    </svg>`;
+  return L.divIcon({ html: svg, className: '', iconSize: [26,26], iconAnchor:[13,13], popupAnchor:[0,-13] });
+}
+
+// ── Popup HTML factory ──
+function binPopupHTML(b){
+  const fillColor = b.fill < 50 ? '#22c55e' : b.fill < 80 ? '#f59e0b' : '#ef4444';
+  const statusBadge = b.status === 'full'
+    ? `<span style="background:#fee2e2;color:#991b1b;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:600;">Full</span>`
+    : b.fill >= 80
+      ? `<span style="background:#fef3c7;color:#92400e;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:600;">Nearly Full</span>`
+      : `<span style="background:#d1fae5;color:#065f46;padding:2px 9px;border-radius:100px;font-size:10px;font-weight:600;">OK</span>`;
+  return `
+    <div class="popup-header">
+      <div class="popup-title">🗑️ ${b.location}</div>
+      ${statusBadge}
+    </div>
+    <div class="popup-body">
+      <div class="popup-row"><span>Fill Level</span><span class="popup-val" style="color:${fillColor};">${b.fill}%</span></div>
+      <div class="popup-fill-wrap">
+        <div class="popup-fill-bar" style="width:${b.fill}%;background:${fillColor};"></div>
+      </div>
+      <div class="popup-row"><span>Last Updated</span><span class="popup-val" style="font-size:11px;">${b.lastUpdated}</span></div>
+    </div>`;
+}
+
+function reportPopupHTML(r){
+  const col = r.status === 'open' ? '#ef4444' : '#22c55e';
+  const bg  = r.status === 'open' ? '#fee2e2' : '#d1fae5';
+  return `
+    <div class="popup-header">
+      <div class="popup-title">📢 ${r.location}</div>
+      <span style="background:${bg};color:${col};padding:2px 9px;border-radius:100px;font-size:10px;font-weight:600;">${r.status.charAt(0).toUpperCase()+r.status.slice(1)}</span>
+    </div>
+    <div class="popup-body">
+      <div style="font-size:12px;color:#374151;">${r.description}</div>
+    </div>`;
+}
+
+// ── Place markers ──
+const binMarkers   = {};
+const reportLayers = L.layerGroup();
+const binLayer     = L.layerGroup();
+
+BIN_DATA.forEach(b => {
+  const isFull = b.status === 'full' || b.fill >= 100;
+  const isWarn = !isFull && b.fill >= 80;
+  const color  = isFull ? '#ef4444' : isWarn ? '#f59e0b' : '#22c55e';
+  const icon   = makeIcon(color, isFull);
+
+  const marker = L.marker([b.lat, b.lng], { icon })
+    .bindPopup(binPopupHTML(b), { maxWidth: 240 });
+
+  binMarkers[b.id] = marker;
+  binLayer.addLayer(marker);
+});
+binLayer.addTo(map);
+
+REPORT_DATA.forEach(r => {
+  if(!r.lat || !r.lng) return;
+  L.marker([r.lat, r.lng], { icon: makeReportIcon() })
+    .bindPopup(reportPopupHTML(r), { maxWidth: 240 })
+    .addTo(reportLayers);
+});
+reportLayers.addTo(map);
+
+// Fit map bounds to all markers if bins exist
+if(BIN_DATA.length > 0){
+  const allLatLngs = BIN_DATA.map(b => [b.lat, b.lng]);
+  try { map.fitBounds(allLatLngs, { padding: [40, 40] }); } catch(e) {}
+}
+
+// ── Fly to bin from list ──
+function flyToBin(lat, lng, id){
+  map.flyTo([lat, lng], 16, { animate: true, duration: 1.2 });
+  setTimeout(() => {
+    if(binMarkers[id]) binMarkers[id].openPopup();
+  }, 1300);
+}
+
+function flyToReport(lat, lng){
+  map.flyTo([lat, lng], 16, { animate: true, duration: 1.2 });
+}
+
+// ── Filter chips ──
+let currentFilter = 'all';
+const filterGroups = {
+  all:     { bins: true,  reports: true  },
+  ok:      { bins: true,  reports: false },
+  warn:    { bins: true,  reports: false },
+  full:    { bins: true,  reports: false },
+  reports: { bins: false, reports: true  }
+};
+
+function applyFilter(f, btn){
+  currentFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Toggle report layer
+  if(filterGroups[f].reports){ map.addLayer(reportLayers); } else { map.removeLayer(reportLayers); }
+
+  // Toggle / refresh bin markers
+  binLayer.clearLayers();
+  if(filterGroups[f].bins){
+    BIN_DATA.forEach(b => {
+      const isFull = b.status === 'full' || b.fill >= 100;
+      const isWarn = !isFull && b.fill >= 80;
+      let show = true;
+      if(f === 'ok')   show = !isFull && !isWarn;
+      if(f === 'warn') show = isWarn;
+      if(f === 'full') show = isFull;
+      if(show){
+        const color = isFull ? '#ef4444' : isWarn ? '#f59e0b' : '#22c55e';
+        L.marker([b.lat, b.lng], { icon: makeIcon(color, isFull) })
+          .bindPopup(binPopupHTML(b), { maxWidth: 240 })
+          .addTo(binLayer);
+      }
+    });
+    binLayer.addTo(map);
+  }
+
+  // Sync side bin list
+  document.querySelectorAll('.bin-list-item').forEach(item => {
+    const fill   = parseInt(item.dataset.fill) || 0;
+    const status = item.dataset.status;
+    const isFull = status === 'full' || fill >= 100;
+    const isWarn = !isFull && fill >= 80;
+    let show = true;
+    if(!filterGroups[f].bins){ show = false; }
+    else if(f === 'ok')   show = !isFull && !isWarn;
+    else if(f === 'warn') show = isWarn;
+    else if(f === 'full') show = isFull;
+    item.style.display = show ? '' : 'none';
+  });
+}
+</script>
+
+{% endblock %}
