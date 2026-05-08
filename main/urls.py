@@ -29,7 +29,7 @@ urlpatterns = [
     path("dashboard/",                         views.city_dashboard,       name="dashboard"),
 
     # ── ADMIN UI ──
-    path("admin-dashboard/",                   views.admin_dashboard,      name="admin_dashboard"),
+    path("admin-dashboard/",                  views.admin_dashboard,      name="admin_dashboard"),
     path("admin-dashboard/bins/",              views.admin_bins,           name="admin_bins"),
     path("admin-dashboard/pickups/",           views.pickups_view,         name="admin_pickups"),
     path("admin-dashboard/pickup/update/<int:id>/", views.update_pickup,   name="update_pickup"),
