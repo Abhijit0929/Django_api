@@ -1,0 +1,77 @@
+{% extends 'navbar.html' %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  .admin-tabs{display:flex;gap:4px;background:#fff;border:.5px solid #e5e7eb;border-radius:12px;padding:5px;width:fit-content;margin-bottom:20px;flex-wrap:wrap;}
+  .admin-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;text-decoration:none;transition:background .15s,color .15s;}
+  .admin-tab:hover{background:#f3f4f6;color:#111;}
+  .admin-tab.active{background:#0a2e1a;color:#4ade80;}
+  .form-card{background:#fff;border:.5px solid #e5e7eb;border-radius:20px;padding:32px;max-width:640px;}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .form-group{margin-bottom:18px;}
+  @media(max-width:640px){.form-row{grid-template-columns:1fr;}}
+</style>
+
+<div class="page-header reveal">
+  <div class="page-header-tag">✏️ Admin</div>
+  <h1>Edit <span>Smart Bin</span></h1>
+  <p>Update the details for bin at <strong style="color:#4ade80;">{{ bin.location }}</strong>.</p>
+</div>
+
+<!-- TABS -->
+<div class="admin-tabs reveal">
+  <a href="/admin-dashboard/" class="admin-tab">Dashboard</a>
+  <a href="/admin-dashboard/bins/" class="admin-tab active">Bins</a>
+  <a href="/admin-dashboard/pickups/" class="admin-tab">Pickups</a>
+  <a href="/admin-dashboard/reports/" class="admin-tab">Reports</a>
+  <a href="/admin-dashboard/feedback/" class="admin-tab">Feedback</a>
+  <a href="/admin-dashboard/notifications/" class="admin-tab">Notifications</a>
+</div>
+
+{% if error %}
+<div class="alert alert-red reveal">⚠️ {{ error }}</div>
+{% endif %}
+
+<div class="form-card reveal">
+  <form method="POST">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label class="form-label">📍 Location Name</label>
+      <input type="text" name="location" class="form-input" value="{{ bin.location }}" required>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">🗺️ Latitude</label>
+        <input type="number" step="any" name="latitude" class="form-input" value="{{ bin.latitude }}" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">🗺️ Longitude</label>
+        <input type="number" step="any" name="longitude" class="form-input" value="{{ bin.longitude }}" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">📊 Fill Level (%)</label>
+        <input type="number" name="fill_level" min="0" max="100" class="form-input" value="{{ bin.fill_level }}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">🚦 Status</label>
+        <select name="status" class="form-input">
+          <option value="empty" {% if bin.status == 'empty' %}selected{% endif %}>Empty</option>
+          <option value="full"  {% if bin.status == 'full'  %}selected{% endif %}>Full</option>
+        </select>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-top:8px;">
+      <button type="submit" class="btn-primary">💾 Save Changes</button>
+      <a href="/admin-dashboard/bins/" class="btn-outline">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

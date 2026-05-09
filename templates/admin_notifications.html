@@ -1,0 +1,80 @@
+{% extends 'navbar.html' %}
+{% block content %}
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  .admin-tabs{display:flex;gap:4px;background:#fff;border:.5px solid #e5e7eb;border-radius:12px;padding:5px;width:fit-content;margin-bottom:20px;flex-wrap:wrap;}
+  .admin-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;text-decoration:none;transition:background .15s,color .15s;}
+  .admin-tab:hover{background:#f3f4f6;color:#111;}
+  .admin-tab.active{background:#0a2e1a;color:#4ade80;}
+  .notif-list{display:flex;flex-direction:column;gap:10px;}
+  .notif-item{background:#fff;border:.5px solid #e5e7eb;border-radius:14px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px;transition:box-shadow .2s;}
+  .notif-item:hover{box-shadow:0 4px 16px rgba(0,0,0,.06);}
+  .notif-icon{width:38px;height:38px;border-radius:10px;background:#f0fdf4;border:.5px solid #d1fae5;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .notif-msg{font-size:14px;color:#374151;line-height:1.5;flex:1;}
+  .notif-meta{font-size:11px;color:#9ca3af;margin-top:4px;}
+  .notif-user{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;background:#f9fafb;padding:2px 8px;border-radius:100px;border:.5px solid #e5e7eb;}
+</style>
+
+<div class="page-header reveal">
+  <div class="page-header-tag">🔔 Admin</div>
+  <h1>All <span>Notifications</span></h1>
+  <p>Monitor all system-generated notifications sent to users and admins.</p>
+</div>
+
+<!-- TABS -->
+<div class="admin-tabs reveal">
+  <a href="/admin-dashboard/" class="admin-tab">Dashboard</a>
+  <a href="/admin-dashboard/bins/" class="admin-tab">Bins</a>
+  <a href="/admin-dashboard/pickups/" class="admin-tab">Pickups</a>
+  <a href="/admin-dashboard/reports/" class="admin-tab">Reports</a>
+  <a href="/admin-dashboard/feedback/" class="admin-tab">Feedback</a>
+  <a href="/admin-dashboard/notifications/" class="admin-tab active">Notifications</a>
+</div>
+
+<!-- STATS -->
+<div class="stat-grid reveal" style="margin-bottom:20px;">
+  <div class="stat-item">
+    <div class="stat-item-num">{{ notifications|length }}</div>
+    <div class="stat-item-label">Total Notifications</div>
+  </div>
+  <div class="stat-item">
+    <div class="stat-item-num red">{{ unread_count }}</div>
+    <div class="stat-item-label">Unread</div>
+  </div>
+</div>
+
+<span class="section-label reveal">{{ notifications|length }} notification{{ notifications|length|pluralize }}</span>
+
+{% if notifications %}
+<div class="notif-list reveal">
+  {% for notif in notifications %}
+  <div class="notif-item">
+    <div class="notif-icon">🔔</div>
+    <div style="flex:1;">
+      <div class="notif-msg">{{ notif.message }}</div>
+      <div class="notif-meta" style="display:flex;align-items:center;gap:8px;margin-top:6px;">
+        <span class="notif-user">
+          <div style="width:16px;height:16px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;">{{ notif.user.username|first|upper }}</div>
+          {{ notif.user.username }}
+        </span>
+        <span>·</span>
+        <span>{{ notif.created_at|date:"d M Y, H:i" }}</span>
+        {% if notif.is_read %}
+          <span class="badge badge-green" style="font-size:10px;padding:2px 8px;">Read</span>
+        {% else %}
+          <span class="badge badge-red" style="font-size:10px;padding:2px 8px;">Unread</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="table-wrap reveal" style="padding:60px;text-align:center;color:#9ca3af;">
+  <div style="font-size:40px;margin-bottom:12px;">🔔</div>
+  <p>No notifications have been sent yet.</p>
+</div>
+{% endif %}
+
+{% endblock %}

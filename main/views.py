@@ -73,6 +73,34 @@ def logout_view(request):
     return redirect("/login/")
 
 
+def admin_login_view(request):
+    """Dedicated login page for admin/staff users only."""
+    if request.user.is_authenticated:
+        if request.user.is_staff:
+            return redirect("/admin-dashboard/")
+        return redirect("/")
+
+    if request.method == "POST":
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "")
+
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            if user.is_staff:
+                login(request, user)
+                return redirect("/admin-dashboard/")
+            else:
+                return render(request, "admin_login.html", {
+                    "error": "Access denied. This portal is for staff only."
+                })
+        else:
+            return render(request, "admin_login.html", {
+                "error": "Invalid username or password."
+            })
+
+    return render(request, "admin_login.html")
+
+
 # ════════════════════════════════════════════════
 #  API VIEWS
 # ════════════════════════════════════════════════
@@ -280,8 +308,114 @@ def admin_bins(request):
 def admin_reports(request):
     if not request.user.is_staff:
         return redirect("/dashboard/")
-    reports = WasteReport.objects.all()
-    return render(request, "admin_reports.html", {"reports": reports})
+    reports       = WasteReport.objects.all().order_by("-id")
+    open_count     = reports.filter(status="open").count()
+    resolved_count = reports.filter(status="resolved").count()
+    return render(request, "admin_reports.html", {
+        "reports":        reports,
+        "open_count":     open_count,
+        "resolved_count": resolved_count,
+    })
+
+
+def resolve_report(request, id):
+    """Mark a waste report as resolved."""
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
+    try:
+        report = WasteReport.objects.get(id=id)
+        report.status = "resolved"
+        report.save()
+        # Notify the reporter
+        Notification.objects.create(
+            user=report.user,
+            message=f"✅ Your waste report at '{report.location}' has been resolved by the admin."
+        )
+    except WasteReport.DoesNotExist:
+        pass
+    return redirect("/admin-dashboard/reports/")
+
+
+def admin_add_bin(request):
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
+
+    if request.method == "POST":
+        location   = request.POST.get("location", "").strip()
+        latitude   = request.POST.get("latitude", "").strip()
+        longitude  = request.POST.get("longitude", "").strip()
+        fill_level = request.POST.get("fill_level", "0").strip()
+        status     = request.POST.get("status", "empty")
+
+        if not location or not latitude or not longitude:
+            return render(request, "admin_add_bin.html", {
+                "error": "Location, latitude and longitude are required.",
+                "form_data": request.POST,
+            })
+
+        if SmartBin.objects.filter(location=location).exists():
+            return render(request, "admin_add_bin.html", {
+                "error": f"A bin at '{location}' already exists.",
+                "form_data": request.POST,
+            })
+
+        SmartBin.objects.create(
+            location=location,
+            latitude=float(latitude),
+            longitude=float(longitude),
+            fill_level=int(fill_level) if fill_level.isdigit() else 0,
+            status=status,
+        )
+        return redirect("/admin-dashboard/bins/")
+
+    return render(request, "admin_add_bin.html")
+
+
+def admin_edit_bin(request, id):
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
+
+    bin_obj = SmartBin.objects.get(id=id)
+
+    if request.method == "POST":
+        location   = request.POST.get("location", "").strip()
+        latitude   = request.POST.get("latitude", "").strip()
+        longitude  = request.POST.get("longitude", "").strip()
+        fill_level = request.POST.get("fill_level", "0").strip()
+        status     = request.POST.get("status", "empty")
+
+        if not location or not latitude or not longitude:
+            return render(request, "admin_edit_bin.html", {
+                "error": "Location, latitude and longitude are required.",
+                "bin": bin_obj,
+            })
+
+        # Check uniqueness (exclude self)
+        if SmartBin.objects.filter(location=location).exclude(id=id).exists():
+            return render(request, "admin_edit_bin.html", {
+                "error": f"Another bin at '{location}' already exists.",
+                "bin": bin_obj,
+            })
+
+        bin_obj.location   = location
+        bin_obj.latitude   = float(latitude)
+        bin_obj.longitude  = float(longitude)
+        bin_obj.fill_level = int(fill_level) if fill_level.isdigit() else 0
+        bin_obj.status     = status
+        bin_obj.save()
+        return redirect("/admin-dashboard/bins/")
+
+    return render(request, "admin_edit_bin.html", {"bin": bin_obj})
+
+
+def admin_delete_bin(request, id):
+    if not request.user.is_staff:
+        return redirect("/dashboard/")
+    try:
+        SmartBin.objects.get(id=id).delete()
+    except SmartBin.DoesNotExist:
+        pass
+    return redirect("/admin-dashboard/bins/")
 
 
 def feedback_view(request):
@@ -330,15 +464,25 @@ def profile_view(request):
 def admin_feedback(request):
     if not request.user.is_staff:
         return redirect("/dashboard/")
-    feedbacks = Feedback.objects.all().order_by("-created_at")
-    return render(request, "admin_feedback.html", {"feedbacks": feedbacks})
+    from django.db.models import Avg
+    feedbacks  = Feedback.objects.all().order_by("-created_at")
+    avg_rating = feedbacks.aggregate(avg=Avg("rating"))["avg"]
+    avg_rating = round(avg_rating, 1) if avg_rating else None
+    return render(request, "admin_feedback.html", {
+        "feedbacks":  feedbacks,
+        "avg_rating": avg_rating,
+    })
 
 
 def admin_notifications(request):
     if not request.user.is_staff:
         return redirect("/dashboard/")
     notifications = Notification.objects.all().order_by("-created_at")
-    return render(request, "admin_notifications.html", {"notifications": notifications})
+    unread_count  = notifications.filter(is_read=False).count()
+    return render(request, "admin_notifications.html", {
+        "notifications": notifications,
+        "unread_count":  unread_count,
+    })
 
 
 def notifications_view(request):

@@ -1,91 +1,103 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends 'navbar.html' %}
+{% block content %}
 
-<title>Pickup Management</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap');
+  .admin-tabs{display:flex;gap:4px;background:#fff;border:.5px solid #e5e7eb;border-radius:12px;padding:5px;width:fit-content;margin-bottom:20px;flex-wrap:wrap;}
+  .admin-tab{padding:7px 16px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7280;text-decoration:none;transition:background .15s,color .15s;}
+  .admin-tab:hover{background:#f3f4f6;color:#111;}
+  .admin-tab.active{background:#0a2e1a;color:#4ade80;}
+  .top-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;}
+  .filter-row{display:flex;gap:8px;flex-wrap:wrap;}
+  .filter-btn{padding:6px 14px;border-radius:8px;font-size:12px;font-weight:500;text-decoration:none;border:.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;transition:background .15s,color .15s;}
+  .filter-btn:hover,.filter-btn.active-filter{background:#0a2e1a;color:#4ade80;border-color:#0a2e1a;}
+</style>
 
-<script src="https://cdn.tailwindcss.com"></script>
-
-</head>
-
-<body class="bg-gray-100">
-
-<div class="max-w-5xl mx-auto mt-10 bg-white p-6 rounded shadow">
-
-<h2 class="text-2xl font-bold mb-6 text-green-600">
-Garbage Pickup Tasks
-</h2>
-
-<table class="w-full border">
-
-<thead class="bg-gray-200">
-
-<tr>
-
-<th class="p-3 border">Bin Location</th>
-<th class="p-3 border">Worker</th>
-<th class="p-3 border">Status</th>
-<th class="p-3 border">Action</th>
-
-</tr>
-
-</thead>
-
-<tbody>
-
-{% for pickup in pickups %}
-
-<tr class="text-center">
-
-<td class="border p-2">
-{{ pickup.bin.location }}
-</td>
-
-<td class="border p-2">
-{{ pickup.assigned_worker }}
-</td>
-
-<td class="border p-2">
-
-{% if pickup.status == "pending" %}
-<span class="text-yellow-600 font-semibold">Pending</span>
-
-{% elif pickup.status == "in_progress" %}
-<span class="text-blue-600 font-semibold">In Progress </span>
-
-{% else %}
-<span class="text-green-600 font-semibold">Completed </span>
-{% endif %}
-
-</td>
-
-<td class="border p-2">
-
-{% if pickup.status != "completed" %}
-
-<a href="/pickup/update/{{pickup.id}}/"
-class="bg-green-600 text-white px-3 py-1 rounded">
-Update
-
-</a>
-
-{% else %}
-
-Completed
-
-{% endif %}
-
-</td>
-
-</tr>
-
-{% endfor %}
-
-</tbody>
-
-</table>
-
+<div class="page-header reveal">
+  <div class="page-header-tag">🚛 Admin</div>
+  <h1>Pickup <span>Management</span></h1>
+  <p>Assign, track, and update garbage pickup tasks across the city.</p>
 </div>
 
-</body>
-</html>
+<!-- TABS -->
+<div class="admin-tabs reveal">
+  <a href="/admin-dashboard/" class="admin-tab">Dashboard</a>
+  <a href="/admin-dashboard/bins/" class="admin-tab">Bins</a>
+  <a href="/admin-dashboard/pickups/" class="admin-tab active">Pickups</a>
+  <a href="/admin-dashboard/reports/" class="admin-tab">Reports</a>
+  <a href="/admin-dashboard/feedback/" class="admin-tab">Feedback</a>
+  <a href="/admin-dashboard/notifications/" class="admin-tab">Notifications</a>
+</div>
+
+<!-- TOP BAR -->
+<div class="top-bar reveal">
+  <span class="section-label" style="margin:0;">{{ pickups|length }} pickup task{{ pickups|length|pluralize }}</span>
+  <div class="filter-row">
+    <a href="?status=" class="filter-btn {% if not request.GET.status %}active-filter{% endif %}">All</a>
+    <a href="?status=pending" class="filter-btn {% if request.GET.status == 'pending' %}active-filter{% endif %}">⏳ Pending</a>
+    <a href="?status=in_progress" class="filter-btn {% if request.GET.status == 'in_progress' %}active-filter{% endif %}">🔵 In Progress</a>
+    <a href="?status=completed" class="filter-btn {% if request.GET.status == 'completed' %}active-filter{% endif %}">✅ Completed</a>
+  </div>
+</div>
+
+<!-- TABLE -->
+<div class="table-wrap reveal">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Bin Location</th>
+        <th>Assigned Worker</th>
+        <th>Scheduled Time</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for pickup in pickups %}
+    <tr>
+      <td style="color:#9ca3af;font-size:12px;">#{{ pickup.id }}</td>
+      <td>📍 {{ pickup.bin.location }}</td>
+      <td>
+        {% if pickup.assigned_worker %}
+          <div style="display:flex;align-items:center;gap:7px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;">{{ pickup.assigned_worker.username|first|upper }}</div>
+            {{ pickup.assigned_worker.username }}
+          </div>
+        {% else %}
+          <span style="color:#9ca3af;font-style:italic;">Unassigned</span>
+        {% endif %}
+      </td>
+      <td style="font-size:12px;color:#6b7280;">{{ pickup.scheduled_time|date:"d M Y, H:i" }}</td>
+      <td>
+        {% if pickup.status == "pending" %}
+          <span class="badge badge-yellow">⏳ Pending</span>
+        {% elif pickup.status == "in_progress" %}
+          <span class="badge badge-blue">🔵 In Progress</span>
+        {% else %}
+          <span class="badge badge-green">✅ Completed</span>
+        {% endif %}
+      </td>
+      <td>
+        {% if pickup.status != "completed" %}
+          <a href="/admin-dashboard/pickup/update/{{ pickup.id }}/" class="btn-primary" style="padding:7px 14px;font-size:12px;">
+            {% if pickup.status == "pending" %}▶ Start{% else %}✔ Complete{% endif %}
+          </a>
+        {% else %}
+          <span style="color:#9ca3af;font-size:12px;">—</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr>
+      <td colspan="6" style="text-align:center;padding:50px;color:#9ca3af;">
+        <div style="font-size:32px;margin-bottom:10px;">🚛</div>
+        No pickup tasks scheduled yet.
+      </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
