@@ -17,6 +17,11 @@ from rest_framework import viewsets
 #  AUTH VIEWS
 # ════════════════════════════════════════════════
 
+
+#-------------------------------#
+# LOGIN ADMIN USERNAME AND PASS : admin/PASSWORD@1234
+
+
 def register_view(request):
     if request.user.is_authenticated:
         return redirect("/")
